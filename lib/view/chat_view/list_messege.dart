@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:oo/view/chat_view/chatscreen_list.dart'
     show ChatWithUserByIdScreen;
-import 'package:oo/view/chat_view/list_messege.dart' show MessageListScreen;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class UserListScreen extends StatefulWidget {
-  static const String routeName = '/UserListScreen';
-
+class MessageListScreen extends StatefulWidget {
   @override
-  _UserListScreenState createState() => _UserListScreenState();
+  _MessageListScreenState createState() => _MessageListScreenState();
 }
 
-class _UserListScreenState extends State<UserListScreen> {
+class _MessageListScreenState extends State<MessageListScreen> {
   final SupabaseClient supabase = Supabase.instance.client;
   List<dynamic> allUsers = [];
   List<dynamic> filteredUsers = [];
@@ -28,12 +25,16 @@ class _UserListScreenState extends State<UserListScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchAllUsers();
+    _fetchAllChats();
   }
 
-  Future<void> _fetchAllUsers() async {
+  Future<void> _fetchAllChats() async {
     try {
-      final response = await supabase.from('profiles').select();
+      final response = await supabase
+          .from('chat')
+          .select()
+          .order('create_at', ascending: false); // الأقدم أولاً
+
       setState(() {
         allUsers = response;
         filteredUsers = response;
@@ -58,56 +59,14 @@ class _UserListScreenState extends State<UserListScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('User List'),
+        title: const Text('Chat List'),
         centerTitle: true,
         backgroundColor: Colors.indigo,
         elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => MessageListScreen()),
-              );
-            },
-            icon: Icon(Icons.message),
-          ),
-        ],
       ),
       body: Column(
         children: [
           const SizedBox(height: 12),
-
-          // Professional Filter Chips
-          SizedBox(
-            height: 50,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: userTypes.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final type = userTypes[index];
-                final isSelected = selectedType == type;
-
-                return ChoiceChip(
-                  label: Text(type),
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black87,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  selected: isSelected,
-                  selectedColor: Colors.indigo,
-                  backgroundColor: Colors.grey[200],
-                  onSelected: (_) => _filterUsers(type),
-                );
-              },
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          // User List
           Expanded(
             child:
                 filteredUsers.isEmpty
@@ -129,8 +88,17 @@ class _UserListScreenState extends State<UserListScreen> {
                                 MaterialPageRoute(
                                   builder:
                                       (context) => ChatWithUserByIdScreen(
-                                        userId: user['id'],
-                                        name: user["full_name"],
+                                        name: "",
+                                        userId:
+                                            Supabase
+                                                        .instance
+                                                        .client
+                                                        .auth
+                                                        .currentUser
+                                                        ?.id ==
+                                                    user['user1_id']
+                                                ? user['user2_id']
+                                                : user['user1_id'],
                                       ),
                                 ),
                               );
@@ -158,7 +126,7 @@ class _UserListScreenState extends State<UserListScreen> {
                                   ),
                                 ),
                                 title: Text(
-                                  user['full_name'] ?? 'No Name',
+                                  user['name1'] ?? 'No Name',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
@@ -173,7 +141,7 @@ class _UserListScreenState extends State<UserListScreen> {
                                       style: TextStyle(fontSize: 14),
                                     ),
                                     Text(
-                                      'Gender: ${user['gender'] ?? 'Unknown'}',
+                                      '${user['last_message'] ?? 'Unknown'}',
                                       style: TextStyle(fontSize: 14),
                                     ),
                                   ],

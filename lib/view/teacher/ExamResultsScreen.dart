@@ -1,207 +1,323 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
+import 'package:oo/view/screens/password/Reset%20Password.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class ExamResultsScreen extends StatefulWidget {
-  const ExamResultsScreen({Key? key}) : super(key: key);
+class AddStudentGradeScreen extends StatefulWidget {
+  static const String routeName = '/addStudentGrade';
+  const AddStudentGradeScreen({Key? key}) : super(key: key);
 
   @override
-  _ExamResultsScreenState createState() => _ExamResultsScreenState();
+  _AddStudentGradeScreenState createState() => _AddStudentGradeScreenState();
 }
+bool isLoading = false;
 
-class _ExamResultsScreenState extends State<ExamResultsScreen> {
-  // Liste des résultats des examens avec les données initiales
-  List<Map<String, String>> examResults = [
-    {"student": "Ali Ben", "subject": "Mathématiques", "grade": "15/20", "date": "2025-04-01", "status": "Réussi"},
-    {"student": "Sara M.", "subject": "Français", "grade": "18/20", "date": "2025-04-02", "status": "Réussi"},
-    {"student": "Youssef T.", "subject": "Sciences", "grade": "10/20", "date": "2025-04-03", "status": "Échoué"},
-    {"student": "Lina D.", "subject": "Histoire", "grade": "17/20", "date": "2025-04-04", "status": "Réussi"},
-  ];
+class _AddStudentGradeScreenState extends State<AddStudentGradeScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _subjectController = TextEditingController();
+  final _gradeController = TextEditingController();
+  final _evaluationController = TextEditingController();
+  DateTime? _selectedDate;
 
-  // Contrôleurs pour la saisie des informations de l'élève
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _subjectController = TextEditingController();
-  final TextEditingController _gradeController = TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
-  final TextEditingController _statusController = TextEditingController();
-  
+  List<Map<String, dynamic>> _students = [];
+  String? _selectedStudentId;
 
-  // Méthode pour récupérer les notes pour le graphique
-  List<double> getGrades() {
-    return examResults.map((result) {
-      return double.parse(result["grade"]!.split('/')[0]);
-    }).toList();
+
+  final LinearGradient myColor = const LinearGradient(
+    colors: [Color(0xFF8E9EFB), Color(0xFFB8C6DB)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStudents();
+  }
+
+
+  Future<void> _loadStudents() async {
+    try {
+      final response = await Supabase.instance.client.from('students').select('id, full_name');
+      setState(() {
+        _students = List<Map<String, dynamic>>.from(response);
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Student loading error: $e')),
+      );
+    }
+  }
+
+  Future<void> _submitGrade() async {
+    if (_formKey.currentState!.validate() && _selectedDate != null && _selectedStudentId != null) {
+      final subject = _subjectController.text.trim();
+      final grade = double.tryParse(_gradeController.text.trim());
+      final evaluation = _evaluationController.text.trim();
+      final date = _selectedDate!.toIso8601String();
+
+      if (grade == null || grade < 0 || grade > 20) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter a valid rating between 0 and 20.')),
+        );
+        return;
+      }
+
+      try {
+        await Supabase.instance.client.from('grades').insert({
+          'student_id': _selectedStudentId,
+          'subject': subject,
+          'grade': grade,
+          'evaluation': evaluation,
+          'date': date,
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Note added successfully.')),
+        );
+
+        _formKey.currentState!.reset();
+        _subjectController.clear();
+        _gradeController.clear();
+        _evaluationController.clear();
+        setState(() {
+          _selectedDate = null;
+          _selectedStudentId = null;
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur : $e')),
+        );
+      }
+    } else if (_selectedDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a date.')),
+      );
+    }
+  }
+
+  Future<void> _pickDate() async {
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+    );
+    if (pickedDate != null) {
+      setState(() {
+        _selectedDate = pickedDate;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _subjectController.dispose();
+    _gradeController.dispose();
+    _evaluationController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Transformer les résultats en notes pour le graphique
-    List<double> grades = getGrades();
-
     return Scaffold(
       appBar: AppBar(
-        title: Text("Résultats des examens"),
-        backgroundColor: Color(0xFF345FB4),
+        title: const Text(
+          'Add a note',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Color(0xFF8E9EFB),
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Row for the buttons at the top
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: Container(
+        decoration: BoxDecoration(gradient: myColor),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: ListView(
               children: [
-                ElevatedButton(
-                  onPressed: () {
-                    // Afficher une boîte de dialogue pour entrer les informations d'un nouvel étudiant
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: Text("Ajouter un étudiant"),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              TextField(
-                                controller: _nameController,
-                                decoration: InputDecoration(labelText: "Nom de l'élève"),
-                              ),
-                              TextField(
-                                controller: _subjectController,
-                                decoration: InputDecoration(labelText: "Matière"),
-                              ),
-                              TextField(
-                                controller: _gradeController,
-                                decoration: InputDecoration(labelText: "Note (ex: 15/20)"),
-                              ),
-                              TextField(
-                                controller: _dateController,
-                                decoration: InputDecoration(labelText: "Date de l'examen"),
-                              ),
-                              TextField(
-                                controller: _statusController,
-                                decoration: InputDecoration(labelText: "Statut (Réussi/Échoué)"),
-                              ),
-                            ],
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                // Ajouter l'élève à la liste
-                                setState(() {
-                                  examResults.add({
-                                    "student": _nameController.text,
-                                    "subject": _subjectController.text,
-                                    "grade": _gradeController.text,
-                                    "date": _dateController.text,
-                                    "status": _statusController.text,
-                                  });
-                                });
+                _buildCard(child: _buildStudentDropdown()),
+                const SizedBox(height: 20),
+                _buildTextField(
+                  controller: _subjectController,
+                  hintText: 'Matter',
+                  obscureText: false,
+                  icon: Icons.book_outlined,
+                  validator: (value) => value!.isEmpty ? 'Champ requis' : null,
+                ),
+                const SizedBox(height: 20),
+                _buildTextField(
+                  controller: _gradeController,
+                  hintText: 'Note (/20)',
+                  obscureText: false,
+                  icon: Icons.grade_outlined,
+                  validator: (value) => value!.isEmpty ? 'Champ requis' : null,
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 20),
+                _buildTextField(
+                  controller: _evaluationController,
+                  hintText: 'Type of assessment',
+                  obscureText: false,
+                  icon: Icons.assignment_outlined,
+                  validator: (value) => value!.isEmpty ? 'Champ requis' : null,
+                ),
+                const SizedBox(height: 16),
+                GestureDetector(
+                  onTap: () => _pickDate(),
+                  child: AbsorbPointer(
+                    child: _buildTextField(
+                      controller: TextEditingController(
+                        text: _selectedDate == null
+                            ? ''
+                            : DateFormat('yyyy-MM-dd').format(_selectedDate!),
+                      ),
+                      hintText: 'Assessment date',
+                      icon: Icons.calendar_today,
+                      obscureText: false,
+                      validator: (value) => value!.isEmpty ? 'Date requise' : null,
 
-                                // Fermer la boîte de dialogue et réinitialiser les champs
-                                Navigator.pop(context);
-                                _nameController.clear();
-                                _subjectController.clear();
-                                _gradeController.clear();
-                                _dateController.clear();
-                                _statusController.clear();
-                              },
-                              child: Text("Ajouter"),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                // Fermer la boîte de dialogue sans ajouter d'élève
-                                Navigator.pop(context);
-                              },
-                              child: Text("Annuler"),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                  child: Text("Ajouter un étudiant", style: TextStyle(fontSize: 16)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF345FB4),
-                    foregroundColor: Colors.white, // Texte en blanc
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+
                     ),
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context); // Revenir à l'écran précédent
+
+                const SizedBox(height: 30),
+                const SizedBox(height: 30),
+                isLoading
+                    ? const Center(
+                  child: CircularProgressIndicator(color: Colors.blue),
+                )
+                    : InkWell(
+                  onTap: () async {
+                    setState(() => isLoading = true);
+                    await _submitGrade();
+                    setState(() => isLoading = false);
                   },
-                  child: Text("Retour", style: TextStyle(fontSize: 16)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF345FB4),
-                    foregroundColor: Colors.white, // Texte en blanc
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    width: double.infinity,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(34, 245, 244, 244),
+                      borderRadius: const BorderRadius.all(Radius.circular(16)),
+                      border: Border.all(color: Colors.white),
                     ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-            Text(
-              "Résultats des examens",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF345FB4),
-              ),
-            ),
-            SizedBox(height: 20),
-            // Affichage du graphique
-            Container(
-              height: 200,
-              child: BarChart(
-                BarChartData(
-                  gridData: FlGridData(show: false),
-                  titlesData: FlTitlesData(show: false),
-                  borderData: FlBorderData(show: false),
-                  barGroups: grades.map((grade) {
-                    return BarChartGroupData(
-                      x: grades.indexOf(grade),
-                      barRods: [
-                        BarChartRodData(
-                          toY: grade,
-                          color: grade >= 10 ? Colors.green : Colors.red, // Rouge si < 10, vert si >= 10
-                          width: 15,
+                    child: const Center(
+                      child: Text(
+                        'Enregistrer la note',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 16,
+                          color: Colors.white,
                         ),
-                      ],
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            // Liste des résultats
-            Expanded(
-              child: ListView.builder(
-                itemCount: examResults.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: 8),
-                    elevation: 5,
-                    child: ListTile(
-                      title: Text(examResults[index]["student"]!),
-                      subtitle: Text(
-                        "${examResults[index]["subject"]} - ${examResults[index]["grade"]} - ${examResults[index]["date"]} - ${examResults[index]["status"]}",
-                        style: TextStyle(fontSize: 14),
                       ),
                     ),
-                  );
-                },
-              ),
+                  ),
+                ),
+
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
+
+  Widget _buildCard({required Widget child}) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4),
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    required bool obscureText,
+    required IconData icon,
+    required String? Function(String?) validator,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+        child: TextFormField(
+          controller: controller,
+          obscureText: obscureText,
+          keyboardType: keyboardType,
+          style: const TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 16,
+            color: Colors.black,
+
+          ),
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 16),
+            prefixIcon: Icon(icon, color: primaryColor),
+            border: InputBorder.none,
+          ),
+          validator: validator,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStudentDropdown() {
+    return DropdownButtonFormField<String>(
+      value: _selectedStudentId,
+      style: const TextStyle(
+        fontFamily: 'Poppins',
+        fontSize: 16,
+        color: Colors.black, // 👈 ceci force le texte sélectionné à rester noir
+      ),
+
+      items: _students.map((student) {
+        return DropdownMenuItem<String>(
+          value: student['id'],
+          child: Text(
+            student['full_name'],
+            style: const TextStyle(fontFamily: 'Poppins', fontSize: 16),
+          ),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          _selectedStudentId = value;
+
+        });
+      },
+      decoration: const InputDecoration(
+        labelText: 'Select a student',
+        labelStyle: TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 16,
+          color: Color.fromARGB(255, 57, 56, 56),
+        ),
+        border: InputBorder.none,
+      ),
+      validator: (value) => value == null ? 'Please select a student' : null,
+    );
+  }
 }
+
+
+
+
+
+// TODO Implement this library.

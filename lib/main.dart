@@ -1,4 +1,3 @@
-
 import 'package:oo/admin/ManageStudentsScreen.dart';
 import 'package:oo/my_profile_screen.dart';
 import 'package:oo/routes.dart';
@@ -7,15 +6,13 @@ import 'package:oo/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:oo/view/chat_view/chatscreen_list.dart';
 import 'package:oo/view/chat_view/list_user.dart';
-import 'package:oo/view/parent/ParentChatScreen.dart';
+
 import 'package:oo/view/parent/grades_screen.dart';
 import 'package:oo/view/parent/homework_screen.dart';
 import 'package:oo/view/parent/parent_profile_screen.dart';
 import 'package:oo/view/parent/technical_support_screen.dart';
 import 'package:oo/view/screens/Signup_Screen/Signup_Screen.dart';
 import 'package:oo/view/screens/home_screen/teacher_home_screen%20(1).dart';
-
-
 
 import 'package:oo/view/screens/password/CreateNewPasswordScreen.dart';
 import 'package:oo/view/student/edit_student_profile_screen.dart';
@@ -31,14 +28,12 @@ import 'package:sizer/sizer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'admin/Admin Dashboard.dart';
 
-
 import 'admin/manage_users.dart';
 
 import 'admin/manage_notifications.dart';
 import 'admin/manage_payments.dart';
 import 'admin/manage_schools.dart';
 import 'admin/view_data.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -80,12 +75,19 @@ class MyApp extends StatelessWidget {
             'HomeworkScreen': (context) => const HomeworkScreen(),
             'GradesScreen': (context) => const GradesScreen(),
             '/studentHome': (_) => StudentHomeScreen(),
-  '/teacherHome': (_) => TeacherHomeScreen(),
-  '/parentProfile': (_) => ParentProfileScreen(),
-  '/adminDashboard': (_) => AdminDashboard(),
-'/ChatWithUserByIdScreen':(_)=>ChatWithUserByIdScreen(),
-            '/UserListScreen':(_)=>UserListScreen(),
-           'TechnicalSupportScreen':
+            '/TeacherHomeScreen': (_) => TeacherHomeScreen(),
+
+            '/adminDashboard': (_) => AdminDashboard(),
+            '/UserListScreen': (_) => UserListScreen(),
+            'ChatWithUserByIdScreen':
+                (_) => ChatWithUserByIdScreen(userId: '', name: ''),
+            'UserListScreen': (_) => UserListScreen(),
+            '/UserListScreen': (context) => UserListScreen(),
+            '/ChatWithUserByIdScreen':
+                (context) => ChatWithUserByIdScreen(userId: '', name: ''),
+            ChatWithUserByIdScreen.routeName:
+                (context) => const ChatWithUserByIdScreen(userId: '', name: ''),
+            'TechnicalSupportScreen':
                 (context) => const TechnicalSupportScreen(),
             StudentContactScreen.routeName: (context) => StudentContactScreen(),
             StudentResultsScreen.routeName:

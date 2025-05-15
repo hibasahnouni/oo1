@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:oo/view/screens/login_screen/login_screen.dart';
 import 'package:sizer/sizer.dart';
 
-
 class SplashScreen extends StatefulWidget {
   static String routeName = 'SplashScreen';
 
@@ -14,7 +13,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(seconds: 60), () {
+    Future.delayed(Duration(seconds: 4), () {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => OnboardingScreen()),
@@ -31,19 +30,22 @@ class _SplashScreenState extends State<SplashScreen> {
           MaterialPageRoute(builder: (context) => OnboardingScreen()),
         );
       },
-      child: Scaffold(
-        backgroundColor: Colors.blue.shade700,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(height: 20),
-              Image.asset(
-                'assets/images/splash.png',
-                height: 60.h,
-                width: 60.w,
-              ),
-            ],
+      child: Container(
+        decoration: BoxDecoration(gradient: myColor),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(height: 20),
+                Image.asset(
+                  'assets/images/logo.png',
+                  height: 60.h,
+                  width: 60.w,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -137,7 +139,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                       decoration: BoxDecoration(
                         gradient: myColor,
-                        borderRadius: BorderRadius.only(topLeft: Radius.circular(16) , topRight: Radius.circular(16)),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16),
+                        ),
                       ),
                       child: Text(
                         _onboardingData[index]["description"]!,
@@ -209,14 +214,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                   child: Text(
                     "Get Started",
-                    style: TextStyle(fontSize: 14.sp, color: Colors.black, fontWeight: 
-                    FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
             ),
-
-         
         ],
       ),
     );

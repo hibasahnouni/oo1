@@ -5,13 +5,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ChatWithUserByIdScreen extends StatefulWidget {
   static const String routeName = '/ChatWithUserByIdScreen';
-  const ChatWithUserByIdScreen({
-    super.key,
-    required this.userId,
-    required this.name,
-  });
+  const ChatWithUserByIdScreen({super.key, required this.userId});
   final String userId;
-  final String name;
+
   @override
   State<ChatWithUserByIdScreen> createState() => _ChatWithUserByIdScreenState();
 }
@@ -39,8 +35,8 @@ class _ChatWithUserByIdScreenState extends State<ChatWithUserByIdScreen> {
           .from('messages')
           .select()
           .or(
-            'and(sender_id.eq.$senderId,receiver_id.eq.$receiverId),and(sender_id.eq.$receiverId,receiver_id.eq.$senderId)',
-          )
+        'and(sender_id.eq.$senderId,receiver_id.eq.$receiverId),and(sender_id.eq.$receiverId,receiver_id.eq.$senderId)',
+      )
           .order('created_at')
           .limit(100);
 
@@ -58,7 +54,7 @@ class _ChatWithUserByIdScreenState extends State<ChatWithUserByIdScreen> {
     }
   }
 
-  Future<void> sendMessage(String receiverId, String name1) async {
+  Future<void> sendMessage(String receiverId) async {
     final senderId = Supabase.instance.client.auth.currentUser?.id;
     final content = messageController.text.trim();
 
@@ -72,24 +68,10 @@ class _ChatWithUserByIdScreenState extends State<ChatWithUserByIdScreen> {
       await Supabase.instance.client.from('chat').upsert({
         'user1_id': senderId,
         'user2_id': receiverId,
-        'name1': name1,
-        'name2': Supabase.instance.client.auth.currentUser?.lastSignInAt,
         'last_message': content,
       });
     } catch (e) {
-      print('Upsert failed, trying update: $e');
-
-      try {
-        await Supabase.instance.client
-            .from('chat')
-            .update({
-              'last_message': content,
-              'create_at': DateTime.now().toString(),
-            })
-            .match({'user1_id': senderId ?? '', 'user2_id': receiverId});
-      } catch (e) {
-        print('Update also failed: $e');
-      }
+      print('Error updating chat: $e');
     }
 
     messageController.clear();
@@ -125,9 +107,9 @@ class _ChatWithUserByIdScreenState extends State<ChatWithUserByIdScreen> {
                   final message = messages[index];
                   final isSender = message['sender_id'] == currentUserId;
                   final alignment =
-                      isSender ? Alignment.centerRight : Alignment.centerLeft;
+                  isSender ? Alignment.centerRight : Alignment.centerLeft;
                   final bubbleColor =
-                      isSender ? Colors.blue.shade100 : Colors.grey.shade200;
+                  isSender ? Colors.blue.shade100 : Colors.grey.shade200;
 
                   return Align(
                     alignment: alignment,
@@ -187,12 +169,12 @@ class _ChatWithUserByIdScreenState extends State<ChatWithUserByIdScreen> {
                         controller: messageController,
                         style: TextStyle(
                           color:
-                              Colors
-                                  .black87, // Set a clear readable color for the input text
+                          Colors
+                              .black87, // Set a clear readable color for the input text
                           fontSize: 16, // Optimal font size for readability
                           fontWeight:
-                              FontWeight
-                                  .w500, // Semi-bold text for better emphasis
+                          FontWeight
+                              .w500, // Semi-bold text for better emphasis
                         ),
                         decoration: InputDecoration(
                           // Focused border style
@@ -217,16 +199,16 @@ class _ChatWithUserByIdScreenState extends State<ChatWithUserByIdScreen> {
                           hintText: "Type a message...",
                           hintStyle: TextStyle(
                             color:
-                                Colors
-                                    .grey
-                                    .shade500, // Subtle gray for hint text
+                            Colors
+                                .grey
+                                .shade500, // Subtle gray for hint text
                             fontSize: 16,
                           ),
 
                           // Label text
                           labelStyle: TextStyle(
                             color:
-                                Colors.black54, // Darker shade for label text
+                            Colors.black54, // Darker shade for label text
                           ),
 
                           // Customizing text area appearance
@@ -241,9 +223,9 @@ class _ChatWithUserByIdScreenState extends State<ChatWithUserByIdScreen> {
                           // Fill color for background
                           filled: true,
                           fillColor:
-                              Colors
-                                  .grey
-                                  .shade100, // Soft background color for better contrast
+                          Colors
+                              .grey
+                              .shade100, // Soft background color for better contrast
                           // Remove the icon prefix style if it's not required
                           prefixStyle: TextStyle(color: Colors.transparent),
 
@@ -251,7 +233,7 @@ class _ChatWithUserByIdScreenState extends State<ChatWithUserByIdScreen> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30),
                             borderSide:
-                                BorderSide.none, // No border on the inside
+                            BorderSide.none, // No border on the inside
                           ),
                         ),
                       ),
@@ -259,7 +241,7 @@ class _ChatWithUserByIdScreenState extends State<ChatWithUserByIdScreen> {
 
                     const SizedBox(width: 8),
                     GestureDetector(
-                      onTap: () => sendMessage(widget.userId, widget.name),
+                      onTap: () => sendMessage(widget.userId),
                       child: CircleAvatar(
                         radius: 22,
                         backgroundColor: Colors.blue.shade700,

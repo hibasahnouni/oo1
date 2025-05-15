@@ -4,6 +4,7 @@ import 'package:oo/view/parent/child_regestration_screen.dart';
 import 'package:oo/view/parent/parent_profile_screen.dart';
 import 'package:oo/view/parent/payment_status_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../chat_view/chatscreen_list.dart';
 import '../screens/login_screen/login_screen.dart';
 import 'attendance_screen.dart';
 import 'lesson_compensation_screen.dart';
@@ -36,16 +37,14 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
     final parentId = supabase.auth.currentUser!.id;
 
     // 1. Récupérer le parent
-    final parentResponse = await supabase
-        .from('parents')
-        .select()
-        .eq('id', parentId)
-        .single();
+    final parentResponse =
+        await supabase.from('parents').select().eq('id', parentId).single();
 
     if (parentResponse != null) {
       setState(() {
         parentName = parentResponse['name'] ?? "Parent";
-        photoUrl = parentResponse['photo_url'] ?? 'https://via.placeholder.com/150';
+        photoUrl =
+            parentResponse['photo_url'] ?? 'https://via.placeholder.com/150';
       });
 
       // 2. Récupérer les enfants de ce parent
@@ -75,8 +74,10 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
       final studentsResponse = await supabase
           .from('students')
           .select()
-          .contains('child_id', childrenData.map((child) => child['id']).toList());
-
+          .contains(
+            'child_id',
+            childrenData.map((child) => child['id']).toList(),
+          );
 
       setState(() {
         studentsData = List<Map<String, dynamic>>.from(studentsResponse);
@@ -102,9 +103,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
               width: double.infinity,
               height: 160,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
-              decoration: const BoxDecoration(
-                color: Colors.transparent,
-              ),
+              decoration: const BoxDecoration(color: Colors.transparent),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -126,7 +125,8 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => LoginScreen()),
+                              builder: (context) => LoginScreen(),
+                            ),
                           );
                         },
                         icon: const Icon(Icons.logout, color: Colors.white),
@@ -161,50 +161,50 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                     title: "Statut du paiement",
                     onTap:
                         () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ManagePaymentsScreen(),
-                      ),
-                    ),
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ManagePaymentsScreen(),
+                          ),
+                        ),
                   ),
                   ParentCard(
                     icon: Icons.app_registration,
                     title: "Enregistrement enfant",
                     onTap:
                         () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ChildRegistrationPage(),
-                      ),
-                    ),
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ChildRegistrationPage(),
+                          ),
+                        ),
                   ),
                   ParentCard(
                     icon: Icons.book_online,
                     title: "Compensation leçons",
                     onTap:
                         () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => LessonCompensationScreen(),
-                      ),
-                    ),
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => LessonCompensationScreen(),
+                          ),
+                        ),
                   ),
                   ParentCard(
                     icon: Icons.check_circle,
                     title: "Assiduité",
                     onTap:
                         () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => AttendanceScreen()),
-                    ),
+                          context,
+                          MaterialPageRoute(builder: (_) => AttendanceScreen()),
+                        ),
                   ),
                   ParentCard(
                     icon: Icons.message,
-                    title: "Messages",
+                    title: "Chats",
                     onTap:
-                        () =>
-                        Navigator.pushNamed(context, 'ChatWithSchoolScreen'),
+                        () => Navigator.pushNamed(context, '/UserListScreen'),
                   ),
+
                   ParentCard(
                     icon: Icons.assignment,
                     title: "Devoirs",
@@ -220,9 +220,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                     title: "Support",
                     onTap:
                         () => Navigator.pushNamed(
-                      context,
-                      'TechnicalSupportScreen',
-                    ),
+                          context,
+                          'TechnicalSupportScreen',
+                        ),
                   ),
                 ],
               ),
@@ -241,7 +241,6 @@ class ParentCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const ParentCard({
-
     required this.icon,
     required this.title,
     required this.onTap,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../chat_view/list_user.dart';
 import '../screens/login_screen/login_screen.dart';
 import 'student_support_screen.dart';
 import 'student_results_screen.dart';
@@ -12,6 +13,7 @@ import 'student_attendance_screen.dart';
 import 'notifications_screen.dart';
 import 'edit_student_profile_screen.dart';
 import 'student_profile_screen.dart';
+import '../chat_view/chatscreen_list.dart'; // Assure-toi que ce chemin est correct
 
 class StudentHomeScreen extends StatefulWidget {
   static const String routeName = 'StudentHomeScreen';
@@ -71,14 +73,12 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         ),
         child: Column(
           children: [
-            // EN-TÊTE AVEC FOND TRANSPARENT
+            // EN-TÊTE
             Container(
               width: double.infinity,
               height: 160,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
-              decoration: const BoxDecoration(
-                color: Colors.transparent,
-              ),
+              decoration: const BoxDecoration(color: Colors.transparent),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -86,7 +86,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   Row(
                     children: [
                       const Text(
-                        "Bienvenue, Élève 👋",
+                        "Tableau de bord Élève",
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           fontSize: 22,
@@ -94,14 +94,12 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                           color: Colors.white,
                         ),
                       ),
-
                       const Spacer(),
                       IconButton(
                         onPressed: () {
-                          Navigator.push(
+                          Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(
-                                builder: (context) => LoginScreen()),
+                            MaterialPageRoute(builder: (_) => LoginScreen()),
                           );
                         },
                         icon: const Icon(Icons.logout, color: Colors.white),
@@ -110,7 +108,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    school,
+                    "Bienvenue, $studentName 👋",
                     style: const TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 16,
@@ -127,23 +125,62 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             Expanded(
               child: GridView.count(
                 crossAxisCount: 2,
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 0.95,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                crossAxisSpacing: 15,
+                mainAxisSpacing: 15,
                 children: [
-                  StudentCard(icon: Icons.book, title: "Mes Cours", onTap: () => Navigator.pushNamed(context, StudentResultsScreen.routeName)),
-                  StudentCard(icon: Icons.assignment, title: "Devoirs", onTap: () => Navigator.pushNamed(context, StudentHomeworkScreen.routeName)),
-                  StudentCard(icon: Icons.grade, title: "Notes", onTap: () => Navigator.pushNamed(context, StudentGradesScreen.routeName)),
-                  StudentCard(icon: Icons.support_agent, title: "Support", onTap: () => Navigator.pushNamed(context, StudentSupportScreen.routeName)),
-                  StudentCard(icon: Icons.info, title: "Détails", onTap: () => Navigator.pushNamed(context, StudentDetailsScreen.routeName)),
-                  StudentCard(icon: Icons.phone, title: "Contact", onTap: () => Navigator.pushNamed(context, StudentContactScreen.routeName)),
-                  StudentCard(icon: Icons.access_time, title: "Présence", onTap: () => Navigator.pushNamed(context, StudentAttendanceScreen.routeName)),
-                  StudentCard(icon: Icons.notifications, title: "Notifications", onTap: () => Navigator.pushNamed(context, NotificationsScreen.routeName)),
-                  StudentCard(icon: Icons.edit, title: "Modifier Profil", onTap: () => Navigator.pushNamed(context, EditStudentProfileScreen.routeName)),
+                  StudentCard(
+                    icon: Icons.assignment,
+                    title: "Devoirs",
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => StudentHomeworkScreen(homeworkList: [],)),
+                    ),
+                  ),
+                  StudentCard(
+                    icon: Icons.grade,
+                    title: "Notes",
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => StudentGradesScreen()),
+                    ),
+                  ),
+                  StudentCard(
+                    icon: Icons.check_circle,
+                    title: "Assiduité",
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => StudentAttendanceScreen()),
+                    ),
+                  ),
+                  StudentCard(
+                    icon: Icons.support_agent,
+                    title: "Support",
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => StudentSupportScreen()),
+                    ),
+                  ),
+                  StudentCard(
+                    icon: Icons.message,
+                    title: "Chats",
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => UserListScreen()),
+                    ),
+                  ),
+                  StudentCard(
+                    icon: Icons.person,
+                    title: "Profil",
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => StudentProfileScreen()),
+                    ),
+                  ),
                 ],
               ),
             ),
+            const SizedBox(height: 30),
           ],
         ),
       ),
@@ -193,7 +230,6 @@ class StudentCard extends StatelessWidget {
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF345FB4),
-
               ),
             ),
           ],
