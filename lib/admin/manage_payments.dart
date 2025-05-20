@@ -165,7 +165,7 @@ class _ManagePaymentsScreenState extends State<ManagePaymentsScreen> {
           ),
         ],
       ),
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: Color(0xFF8E9EFB), 
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(

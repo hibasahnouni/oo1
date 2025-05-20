@@ -1,5 +1,11 @@
-// TODO Implement this library.
 import 'package:flutter/material.dart';
+
+// Classe centrale des couleurs utilisées dans l'app
+class AppColors {
+  static const Color primaryBlue = Color(0xFF345FB4);
+  static const Color backgroundGradientStart = Color(0xFF8E9EFB);
+  static const Color backgroundGradientEnd = Color(0xFFB8C6DB);
+}
 
 class ViewDataScreen extends StatelessWidget {
   static const String routeName = '/viewData';
@@ -8,56 +14,116 @@ class ViewDataScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          _buildHeader("📊 Statistiques"),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  _buildStatCard("Nombre d'élèves", "42", Icons.school),
-                  SizedBox(height: 10),
-                  _buildStatCard("Présences ce mois", "350", Icons.check_circle_outline),
-                  SizedBox(height: 10),
-                  _buildStatCard("Paiements effectués", "39", Icons.credit_score),
-                ],
+      // Tu peux aussi mettre un dégradé si tu veux (comme AdminDashboard)
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.backgroundGradientStart,
+              AppColors.backgroundGradientEnd,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Column(
+          children: [
+            AppBar(
+              backgroundColor:Color(0xFF8E9EFB) ,
+              elevation: 0,
+              title: const Text(
+                '📊 Statistiques',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ),
+              centerTitle: true,
+              iconTheme: const IconThemeData(color: Colors.white),
+              automaticallyImplyLeading: true,
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    _buildStatCard(
+                      title: "Nombre d'élèves",
+                      value: "42",
+                      icon: Icons.school,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildStatCard(
+                      title: "Présences ce mois",
+                      value: "350",
+                      icon: Icons.check_circle_outline,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildStatCard(
+                      title: "Paiements effectués",
+                      value: "39",
+                      icon: Icons.credit_score,
+                    ),
+                  ],
+                ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard({
+    required String title,
+    required String value,
+    required IconData icon,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 10,
+            spreadRadius: 1,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildStatCard(String title, String value, IconData icon) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: ListTile(
-        leading: Icon(icon, color: Color(0xFF345FB4)),
-        title: Text(title),
-        trailing: Text(value, style: TextStyle(fontWeight: FontWeight.bold)),
-      ),
-    );
-  }
-
-  Widget _buildHeader(String title) {
-    return Container(
-      width: double.infinity,
-      height: 150,
-      decoration: BoxDecoration(
-        color: Color(0xFF345FB4),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
-      ),
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-      child: Text(
-        title,
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 32,
+            color: AppColors.primaryBlue,
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primaryBlue,
+              ),
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primaryBlue,
+            ),
+          ),
+        ],
       ),
     );
   }

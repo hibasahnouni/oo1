@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'parent_home_screen.dart';
 
 class ParentProfileScreen extends StatefulWidget {
@@ -72,8 +73,7 @@ class _ParentProfileScreenState extends State<ParentProfileScreen> {
       }
 
       bool hasValidChild = _childNameControllers.any(
-            (controller) => controller.text.trim().isNotEmpty,
-      );
+          (controller) => controller.text.trim().isNotEmpty);
       if (!hasValidChild) {
         throw Exception('Veuillez ajouter au moins un enfant.');
       }
@@ -132,112 +132,130 @@ class _ParentProfileScreenState extends State<ParentProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: const Text("Profil du Parent"),
-        centerTitle: true,
-        backgroundColor: Colors.indigo,
-      ),
-      body: SingleChildScrollView(
-        controller: _scrollController,
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              _buildCard(
-                title: "Informations du parent",
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF8E9EFB), Color(0xFFB8C6DB)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            padding: const EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: Column(
                 children: [
-                  _buildTextField(
-                    label: 'Nom complet',
-                    icon: Icons.person,
-                    controller: _fullNameController,
-                    isRequired: true,
+                  Text(
+                    "Profil du Parent",
+                    style: GoogleFonts.poppins(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                  _buildTextField(
-                    label: 'Email',
-                    icon: Icons.email,
-                    controller: _emailController,
-                    isRequired: true,
-                    keyboardType: TextInputType.emailAddress,
+                  const SizedBox(height: 20),
+                  _buildCard(
+                    title: "Informations du parent",
+                    children: [
+                      _buildTextField(
+                        label: 'Nom complet',
+                        icon: Icons.person,
+                        controller: _fullNameController,
+                        isRequired: true,
+                      ),
+                      _buildTextField(
+                        label: 'Email',
+                        icon: Icons.email,
+                        controller: _emailController,
+                        isRequired: true,
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                      _buildTextField(
+                        label: 'Téléphone',
+                        icon: Icons.phone,
+                        controller: _phoneController,
+                        isRequired: true,
+                        keyboardType: TextInputType.phone,
+                      ),
+                    ],
                   ),
-                  _buildTextField(
-                    label: 'Téléphone',
-                    icon: Icons.phone,
-                    controller: _phoneController,
-                    isRequired: true,
-                    keyboardType: TextInputType.phone,
+                  const SizedBox(height: 20),
+                  _buildCard(
+                    title: "Informations des enfants",
+                    children: [
+                      _buildTextField(
+                        label: 'Nombre d’enfants',
+                        icon: Icons.child_care,
+                        controller: TextEditingController(
+                          text: _numberOfChildren.toString(),
+                        ),
+                        keyboardType: TextInputType.number,
+                        isRequired: true,
+                        onChanged: (value) {
+                          final count = int.tryParse(value) ?? 1;
+                          if (count > 0 && count <= 10) {
+                            setState(() {
+                              _numberOfChildren = count;
+                              _initializeChildrenFields(count);
+                            });
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      ...List.generate(_numberOfChildren, (index) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Enfant ${index + 1}',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            _buildTextField(
+                              label: 'Nom de l’enfant',
+                              icon: Icons.badge,
+                              controller: _childNameControllers[index],
+                              isRequired: true,
+                            ),
+                            _buildTextField(
+                              label: 'Année d’étude',
+                              icon: Icons.school,
+                              controller: _studyYearControllers[index],
+                              keyboardType: TextInputType.number,
+                              isRequired: true,
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                        );
+                      }),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _submitForm,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF8E9EFB),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 40),
+                    ),
+                    child: Text(
+                      'Valider l’inscription',
+                      style: GoogleFonts.poppins(
+                          color: Colors.white, fontSize: 16),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              _buildCard(
-                title: "Informations des enfants",
-                children: [
-                  _buildTextField(
-                    label: 'Nombre d’enfants',
-                    icon: Icons.child_care,
-                    controller: TextEditingController(text: _numberOfChildren.toString()),
-                    keyboardType: TextInputType.number,
-                    isRequired: true,
-                    onChanged: (value) {
-                      final count = int.tryParse(value) ?? 1;
-                      if (count > 0 && count <= 10) {
-                        setState(() {
-                          _numberOfChildren = count;
-                          _initializeChildrenFields(count);
-                        });
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  ...List.generate(_numberOfChildren, (index) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Enfant ${index + 1}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        _buildTextField(
-                          label: 'Nom de l’enfant',
-                          icon: Icons.badge,
-                          controller: _childNameControllers[index],
-                          isRequired: true,
-                        ),
-                        _buildTextField(
-                          label: 'Année d’étude',
-                          icon: Icons.school,
-                          controller: _studyYearControllers[index],
-                          keyboardType: TextInputType.number,
-                          isRequired: true,
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                    );
-                  }),
-                ],
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _submitForm,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 40),
-                ),
-                child: const Text(
-                  'Valider l’inscription',
-                  style: TextStyle(color: Colors.white, fontSize: 15),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -258,12 +276,12 @@ class _ParentProfileScreenState extends State<ParentProfileScreen> {
         controller: controller,
         keyboardType: keyboardType,
         onChanged: onChanged,
-        style: const TextStyle(color: Colors.black),
+        style: GoogleFonts.poppins(color: Colors.black),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Colors.grey),
-          prefixIcon: Icon(icon, color: Colors.indigo),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          labelStyle: GoogleFonts.poppins(color: Colors.grey[700]),
+          prefixIcon: Icon(icon, color: const Color(0xFF8E9EFB)),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           filled: true,
           fillColor: Colors.white,
         ),
@@ -279,8 +297,8 @@ class _ParentProfileScreenState extends State<ParentProfileScreen> {
 
   Widget _buildCard({required String title, required List<Widget> children}) {
     return Card(
-      color: Colors.white,
-      elevation: 4,
+      color: Colors.white.withOpacity(0.95),
+      elevation: 5,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -289,8 +307,11 @@ class _ParentProfileScreenState extends State<ParentProfileScreen> {
           children: [
             Text(
               title,
-              style:
-              const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],  // <-- titre en gris
+              ),
             ),
             const SizedBox(height: 16),
             ...children,

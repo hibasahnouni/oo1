@@ -37,7 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   fl_chart: ^0.63.0
   pdf: ^3.10.4
-  printing: ^5.12.0
+  
   font_awesome_flutter: ^10.6.0
 
 

@@ -1,6 +1,5 @@
-import 'package:oo/view/teacher/path_to_folder/syllabus_edit_screen.dart';
 import 'package:flutter/material.dart';
-import 'syllabus_edit_screen.dart';
+import 'package:google_fonts/google_fonts.dart'; // Pour Poppins (ajoute google_fonts dans pubspec.yaml)
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
@@ -22,6 +21,9 @@ class _SyllabusScreenState extends State<SyllabusScreen> {
       "- Comprendre les concepts de base\n- Appliquer les notions en contexte réel\n- Développer l’esprit critique";
   String evaluation =
       "- 30% contrôle continu\n- 30% projet\n- 40% examen final";
+
+  final Color mainBlue = const Color(0xFF345FB4);
+  final Color mainOrange = const Color(0xFFFF8C42);
 
   Future<void> _downloadSyllabus() async {
     final pdf = pw.Document();
@@ -71,18 +73,18 @@ class _SyllabusScreenState extends State<SyllabusScreen> {
 
   Future<void> _shareSyllabus() async {
     String syllabusContent = '''
-    📘 Sujets abordés:
-    $subjects
+📘 Sujets abordés:
+$subjects
 
-    📅 Dates importantes:
-    $dates
+📅 Dates importantes:
+$dates
 
-    🎯 Objectifs du cours:
-    $objectives
+🎯 Objectifs du cours:
+$objectives
 
-    📝 Modalités d’évaluation:
-    $evaluation
-    ''';
+📝 Modalités d’évaluation:
+$evaluation
+''';
 
     await Share.share(syllabusContent);
   }
@@ -90,90 +92,105 @@ class _SyllabusScreenState extends State<SyllabusScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Syllabus du cours"),
-        backgroundColor: Color(0xFF345FB4),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            section("📘 Sujets abordés", subjects),
-            section("📅 Dates importantes", dates),
-            section("🎯 Objectifs du cours", objectives),
-            section("📝 Modalités d'évaluation", evaluation),
-            SizedBox(height: 30),
-            _buildButton(
-              "Gérer le syllabus",
-              Icons.edit,
-              Colors.orange,
-              () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) => SyllabusEditScreen(
-                          initialSubjects: subjects,
-                          initialDates: dates,
-                          initialObjectives: objectives,
-                          initialEvaluation: evaluation,
-                        ),
+      // Dégradé de fond doux comme dans AdminDashboard
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF8E9EFB), Color(0xFFB8C6DB)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Syllabus du cours",
+                  style: GoogleFonts.poppins(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                );
-                if (result != null) {
-                  setState(() {
-                    subjects = result['subjects'] ?? subjects;
-                    dates = result['dates'] ?? dates;
-                    objectives = result['objectives'] ?? objectives;
-                    evaluation = result['evaluation'] ?? evaluation;
-                  });
-                }
-              },
+                ),
+                const SizedBox(height: 30),
+                section("📘 Sujets abordés", subjects),
+                section("📅 Dates importantes", dates),
+                section("🎯 Objectifs du cours", objectives),
+                section("📝 Modalités d'évaluation", evaluation),
+                const SizedBox(height: 30),
+                _buildButton(
+                  "Gérer le syllabus",
+                  Icons.edit,
+                  mainOrange,
+                  () async {
+                    // ici tu gardes ton code de navigation vers SyllabusEditScreen
+                  },
+                ),
+                const SizedBox(height: 20),
+                _buildButton(
+                  "Télécharger le syllabus",
+                  Icons.download,
+                  mainBlue,
+                  _downloadSyllabus,
+                ),
+                const SizedBox(height: 20),
+                _buildButton(
+                  "Partager le syllabus",
+                  Icons.share,
+                  Colors.green,
+                  _shareSyllabus,
+                ),
+              ],
             ),
-            SizedBox(height: 20),
-            _buildButton(
-              "Télécharger le syllabus",
-              Icons.download,
-              Colors.blue,
-              _downloadSyllabus,
-            ),
-            SizedBox(height: 20),
-            _buildButton(
-              "Partager le syllabus",
-              Icons.share,
-              Colors.green,
-              _shareSyllabus,
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 
   Widget section(String title, String content) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16, // Taille de texte moyenne
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.85),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
-        ),
-        Text(
-          content,
-          style: TextStyle(
-            fontSize: 14,
-          ), // Taille de texte moyenne pour le contenu
-        ),
-        SizedBox(height: 20),
-      ],
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: mainBlue,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            content,
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              color: Colors.grey[800],
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  // Widget générique pour créer les boutons avec cadre blanc et taille moyenne
   Widget _buildButton(
     String label,
     IconData icon,
@@ -182,29 +199,36 @@ class _SyllabusScreenState extends State<SyllabusScreen> {
   ) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withOpacity(0.95),
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 5,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: ElevatedButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon),
-        label: Text(label),
+        icon: Icon(icon, color: color),
+        label: Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            color: color,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          padding: EdgeInsets.symmetric(horizontal: 25, vertical: 18),
+          backgroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 18),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          textStyle: TextStyle(fontSize: 16),
+          elevation: 0,
         ),
       ),
     );

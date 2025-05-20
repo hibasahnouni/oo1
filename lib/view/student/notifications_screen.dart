@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:oo/admin/manage_notifications.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
- // Assure-toi d'importer l'écran d'envoi
+import 'package:google_fonts/google_fonts.dart';
 
 class NotificationsScreen extends StatefulWidget {
   static const String routeName = 'NotificationsScreen';
@@ -15,8 +15,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   List<dynamic> notifications = [];
   bool isLoading = true;
 
-  // Tu peux utiliser une variable globale ou vérifier le user_type Supabase ici
-  final bool isAdmin = true; // Remplace par une vraie vérification plus tard
+  final bool isAdmin = true; // À remplacer par une vraie vérification
+
+  final Gradient backgroundGradient = const LinearGradient(
+    colors: [Color(0xFF8E9EFB), Color(0xFFB8C6DB)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 
   @override
   void initState() {
@@ -41,7 +46,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur lors du chargement des notifications')),
+        const SnackBar(content: Text('Erreur lors du chargement des notifications')),
       );
     }
   }
@@ -56,7 +61,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Fermer'),
+              child: const Text('Fermer'),
             ),
           ],
         );
@@ -74,50 +79,82 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text('Notifications'),
-        backgroundColor: Colors.blue.shade600,
+        title: const Text(
+          'Notifications',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : notifications.isEmpty
-              ? Center(child: Text('Aucune notification trouvée.'))
-              : ListView.builder(
-                  padding: EdgeInsets.all(12),
-                  itemCount: notifications.length,
-                  itemBuilder: (context, index) {
-                    final notif = notifications[index];
-                    return Card(
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      margin: EdgeInsets.symmetric(vertical: 8),
-                      child: ListTile(
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.blue.shade100,
-                          child: Icon(Icons.notifications, color: Colors.blue.shade700),
+      body: Container(
+        decoration: BoxDecoration(gradient: backgroundGradient),
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator(color: Colors.white))
+            : notifications.isEmpty
+                ? Center(
+                    child: Text(
+                      'Aucune notification trouvée.',
+                      style: GoogleFonts.poppins(fontSize: 16, color: Colors.white70),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.only(top: 100, left: 16, right: 16, bottom: 16),
+                    itemCount: notifications.length,
+                    itemBuilder: (context, index) {
+                      final notif = notifications[index];
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.95),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        title: Text(
-                          notif['title'] ?? '',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                          leading: CircleAvatar(
+                            backgroundColor: const Color(0xFFE0E7FF),
+                            child: const Icon(Icons.notifications, color: Color(0xFF5A66F1)),
+                          ),
+                          title: Text(
+                            notif['title'] ?? '',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF2E3A59),
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Par : ${notif['source'] ?? 'Inconnu'}',
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                          onTap: () => _showNotificationDetails(context, notif),
                         ),
-                        subtitle: Text(
-                          'Par : ${notif['source']}',
-                          style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                        ),
-                        trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                        onTap: () => _showNotificationDetails(context, notif),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
+      ),
       floatingActionButton: isAdmin
           ? FloatingActionButton(
               onPressed: _goToManageNotifications,
-              backgroundColor: Colors.blue.shade600,
-              child: Icon(Icons.add),
+              backgroundColor: const Color(0xFF5A66F1),
+              child: const Icon(Icons.add),
               tooltip: 'Ajouter une notification',
             )
           : null,

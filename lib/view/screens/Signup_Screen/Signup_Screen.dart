@@ -82,13 +82,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       await supabase.from('${_userType!.toLowerCase()}s').insert(profileData);
       await supabase.from('profiles').insert({
-  'id': userId,
-  'full_name': fullName,
-  'gender': _gender,
-  'date_of_birth': dob,
-  'user_type': _userType,
-});
-
+        'id': userId,
+        'full_name': fullName,
+        'gender': _gender,
+        'date_of_birth': dob,
+        'user_type': _userType,
+      });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Inscription réussie !')),
@@ -121,6 +120,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
+  final TextStyle commonInputTextStyle = const TextStyle(
+    color: Colors.white70,
+    fontFamily: 'Poppins',
+    fontSize: 12,
+  );
+
+  final TextStyle dropdownTextStyle = const TextStyle(
+    color: Colors.white70,
+    fontFamily: 'Poppins',
+    fontSize: 12,
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -141,6 +152,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                       color: Colors.white70,
+                      fontFamily: 'Poppins',
                     ),
                   ),
                   const SizedBox(height: 30),
@@ -170,8 +182,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         controller: TextEditingController(
                           text: _selectedDate == null
                               ? ''
-                              : DateFormat('yyyy-MM-dd')
-                                  .format(_selectedDate!),
+                              : DateFormat('yyyy-MM-dd').format(_selectedDate!),
                         ),
                         hintText: 'Date de naissance',
                         icon: Icons.calendar_today,
@@ -183,10 +194,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     value: _gender,
                     label: 'Genre',
                     items: ['Male', 'Female'],
+                    
                     onChanged: (val) => setState(() => _gender = val),
+
                   ),
-                   
-                  
                   const SizedBox(height: 16),
                   _buildDropdown(
                     value: _userType,
@@ -194,66 +205,52 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     items: ['Student', 'Teacher', 'Parent', 'Admin'],
                     onChanged: (val) => setState(() => _userType = val),
                   ),
-                  
                   const SizedBox(height: 30),
                   isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      :
-                      
-                      InkWell(
-                        onTap: _signUp,
-                        child: Container(width: double.maxFinite,
-                        height: 50,
-                        child:Center(child: const Text(
-                            'sigup',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 16,
-                              color: Colors.white,
+                      : InkWell(
+                          onTap: _signUp,
+                          child: Container(
+                            width: double.maxFinite,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.all(Radius.circular(16)),
+                              border: Border.all(color: Colors.white),
                             ),
-                            
-                            
+                            child: Center(
+                              child: const Text(
+                                'sigup',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
                           ),
-                          ) ,
-                          
-                          
-                        decoration: BoxDecoration(
-                          
-                          borderRadius: BorderRadius.all(Radius.circular(16)),
-                          border: Border.all(color: Colors.white)),),
-                      )
-                      
-                   ,
-                   const SizedBox(height: 16),
-TextButton(
-  onPressed: () {
-    Navigator.pop(context); // ou Navigator.pushReplacementNamed(context, '/loginScreen');
-  },
-  child: const Text(
-    'Retour à la connexion',
-    style: TextStyle(
-      color: Colors.white70,
-      fontFamily: 'Poppins',
-      decoration: TextDecoration.underline,
-    ),
-  ),
-),
- 
-                   
-                  
-                       
+                        ),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      'Retour à la connexion',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontFamily: 'Poppins',
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
                 ],
-                
               ),
             ),
           ),
         ),
-      
       ),
-      
     );
   }
-  
 
   Widget _buildTextField({
     required TextEditingController controller,
@@ -264,13 +261,13 @@ TextButton(
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
-      style: const TextStyle(color: Colors.white70, fontFamily: 'Poppins' , fontSize: 12),
+      style: commonInputTextStyle,
       decoration: InputDecoration(
         hintText: hintText,
+        hintStyle: commonInputTextStyle,
         prefixIcon: Icon(icon, color: Colors.white),
         filled: true,
         fillColor: Colors.white.withOpacity(0.2),
-
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(color: Colors.white),
           borderRadius: BorderRadius.circular(16),
@@ -299,28 +296,24 @@ TextButton(
       value: value,
       onChanged: onChanged,
       icon: const Icon(Icons.arrow_drop_down, color: Colors.blue),
-      style: const TextStyle(color: Colors.black,fontSize: 12),
-      
-
+      style: dropdownTextStyle,
       isExpanded: true,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
-        
-
+        labelStyle: dropdownTextStyle,
         filled: true,
         fillColor: Colors.white.withOpacity(0.2),
-
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
         ),
       ),
       items: items
-          .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+          .map((item) => DropdownMenuItem(
+                value: item,
+                child: Text(item, style: dropdownTextStyle),
+              ))
           .toList(),
       validator: (val) => val == null ? 'Champ requis' : null,
-      
     );
   }
 }
-

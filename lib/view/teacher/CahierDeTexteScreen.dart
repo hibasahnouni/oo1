@@ -6,7 +6,6 @@ class CahierDeTexteScreen extends StatefulWidget {
 }
 
 class _CahierDeTexteScreenState extends State<CahierDeTexteScreen> {
-  // Liste simulée des entrées du cahier de texte
   List<Map<String, String>> entries = [
     {
       'title': 'Chapitre 1 : Addition',
@@ -18,37 +17,41 @@ class _CahierDeTexteScreenState extends State<CahierDeTexteScreen> {
     },
   ];
 
-  // Fonction pour ajouter une nouvelle entrée
+  final Gradient backgroundGradient = const LinearGradient(
+    colors: [Color(0xFF8E9EFB), Color(0xFFB8C6DB)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
   void _addEntry() {
+    final titleController = TextEditingController();
+    final contentController = TextEditingController();
     showDialog(
       context: context,
       builder: (context) {
-        final titleController = TextEditingController();
-        final contentController = TextEditingController();
         return AlertDialog(
-          title: Text('Ajouter une entrée', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          title: const Text('Ajouter une entrée',
+              style: TextStyle(fontFamily: 'Poppins', fontSize: 18, fontWeight: FontWeight.bold)),
           content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: InputDecoration(hintText: 'Titre'),
-                style: TextStyle(fontSize: 16),
+                decoration: const InputDecoration(hintText: 'Titre'),
+                style: const TextStyle(fontFamily: 'Poppins', fontSize: 16),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               TextField(
                 controller: contentController,
-                decoration: InputDecoration(hintText: 'Contenu'),
-                style: TextStyle(fontSize: 16),
+                decoration: const InputDecoration(hintText: 'Contenu'),
+                style: const TextStyle(fontFamily: 'Poppins', fontSize: 16),
               ),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Annuler', style: TextStyle(fontSize: 16)),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annuler', style: TextStyle(fontFamily: 'Poppins')),
             ),
             TextButton(
               onPressed: () {
@@ -60,7 +63,8 @@ class _CahierDeTexteScreenState extends State<CahierDeTexteScreen> {
                 });
                 Navigator.pop(context);
               },
-              child: Text('Ajouter', style: TextStyle(fontSize: 16, color: Colors.blue)),
+              child: const Text('Ajouter',
+                  style: TextStyle(fontFamily: 'Poppins', color: Color(0xFF345FB4))),
             ),
           ],
         );
@@ -68,37 +72,35 @@ class _CahierDeTexteScreenState extends State<CahierDeTexteScreen> {
     );
   }
 
-  // Fonction pour modifier une entrée
   void _editEntry(int index) {
+    final titleController = TextEditingController(text: entries[index]['title']);
+    final contentController = TextEditingController(text: entries[index]['content']);
     showDialog(
       context: context,
       builder: (context) {
-        final titleController = TextEditingController(text: entries[index]['title']);
-        final contentController = TextEditingController(text: entries[index]['content']);
         return AlertDialog(
-          title: Text('Modifier l\'entrée', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          title: const Text('Modifier l\'entrée',
+              style: TextStyle(fontFamily: 'Poppins', fontSize: 18, fontWeight: FontWeight.bold)),
           content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                decoration: InputDecoration(hintText: 'Titre'),
-                style: TextStyle(fontSize: 16),
+                decoration: const InputDecoration(hintText: 'Titre'),
+                style: const TextStyle(fontFamily: 'Poppins', fontSize: 16),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               TextField(
                 controller: contentController,
-                decoration: InputDecoration(hintText: 'Contenu'),
-                style: TextStyle(fontSize: 16),
+                decoration: const InputDecoration(hintText: 'Contenu'),
+                style: const TextStyle(fontFamily: 'Poppins', fontSize: 16),
               ),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Annuler', style: TextStyle(fontSize: 16)),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annuler', style: TextStyle(fontFamily: 'Poppins')),
             ),
             TextButton(
               onPressed: () {
@@ -110,7 +112,8 @@ class _CahierDeTexteScreenState extends State<CahierDeTexteScreen> {
                 });
                 Navigator.pop(context);
               },
-              child: Text('Modifier', style: TextStyle(fontSize: 16, color: Colors.blue)),
+              child: const Text('Modifier',
+                  style: TextStyle(fontFamily: 'Poppins', color: Color(0xFF345FB4))),
             ),
           ],
         );
@@ -118,7 +121,6 @@ class _CahierDeTexteScreenState extends State<CahierDeTexteScreen> {
     );
   }
 
-  // Fonction pour supprimer une entrée
   void _deleteEntry(int index) {
     setState(() {
       entries.removeAt(index);
@@ -128,65 +130,113 @@ class _CahierDeTexteScreenState extends State<CahierDeTexteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Cahier de texte', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.blue,
-      ),
-      body: Column(
-        children: [
-          // Ajouter une entrée
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: _addEntry,
-              child: Text('Ajouter une entrée', style: TextStyle(fontSize: 16)),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white, backgroundColor: Colors.blue,
-                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-              ),
-            ),
-          ),
-          // Liste des entrées
-          Expanded(
-            child: ListView.builder(
-              itemCount: entries.length,
-              itemBuilder: (context, index) {
-                final entry = entries[index];
-                return Card(
-                  margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  elevation: 5,
-                  child: ListTile(
-                    title: Text(entry['title']!, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    subtitle: Text(entry['content']!, style: TextStyle(fontSize: 16)),
-                    trailing: PopupMenuButton<String>(
-                      onSelected: (value) {
-                        switch (value) {
-                          case 'Modifier':
-                            _editEntry(index);
-                            break;
-                          case 'Supprimer':
-                            _deleteEntry(index);
-                            break;
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        PopupMenuItem<String>(
-                          value: 'Modifier',
-                          child: Text('Modifier', style: TextStyle(fontSize: 16)),
-                        ),
-                        PopupMenuItem<String>(
-                          value: 'Supprimer',
-                          child: Text('Supprimer', style: TextStyle(fontSize: 16)),
-                        ),
-                      ],
+      body: Container(
+        decoration: BoxDecoration(gradient: backgroundGradient),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // HEADER
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+                child: Row(
+                  children: [
+                    const Text(
+                      'Cahier de texte',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.add, color: Colors.white),
+                      onPressed: _addEntry,
+                    ),
+                  ],
+                ),
+              ),
+              // ENTRIES
+              Expanded(
+                child: ListView.builder(
+                  itemCount: entries.length,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemBuilder: (context, index) {
+                    final entry = entries[index];
+                    return Container(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.95),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 10,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.book, color: Color(0xFF345FB4)),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  entry['title'] ?? '',
+                                  style: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                    color: Color(0xFF345FB4),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  entry['content'] ?? '',
+                                  style: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 14,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          PopupMenuButton<String>(
+                            onSelected: (value) {
+                              if (value == 'Modifier') _editEntry(index);
+                              if (value == 'Supprimer') _deleteEntry(index);
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: 'Modifier',
+                                child: Text('Modifier',
+                                    style: TextStyle(fontFamily: 'Poppins')),
+                              ),
+                              const PopupMenuItem(
+                                value: 'Supprimer',
+                                child: Text('Supprimer',
+                                    style: TextStyle(fontFamily: 'Poppins')),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

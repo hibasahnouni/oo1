@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../chat_view/list_user.dart';
 import '../screens/login_screen/login_screen.dart';
 import 'student_support_screen.dart';
-import 'student_results_screen.dart';
+
 import 'student_homework_screen.dart';
 import 'student_grades_screen.dart';
 import 'student_details_screen.dart';

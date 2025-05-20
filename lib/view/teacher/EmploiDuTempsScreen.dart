@@ -3,8 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-import 'package:printing/printing.dart';
-
 class EmploiDuTempsScreen extends StatefulWidget {
   @override
   _EmploiDuTempsScreenState createState() => _EmploiDuTempsScreenState();
@@ -38,12 +36,34 @@ class _EmploiDuTempsScreenState extends State<EmploiDuTempsScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Notification', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          content: Text(message, style: TextStyle(fontSize: 16)),
+          title: Text(
+            'Notification',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Poppins',
+              color: Color(0xFF345FB4),
+            ),
+          ),
+          content: Text(
+            message,
+            style: TextStyle(
+              fontSize: 16,
+              fontFamily: 'Poppins',
+            ),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('OK', style: TextStyle(fontSize: 16, color: Colors.blue)),
+              child: Text(
+                'OK',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Color(0xFF345FB4),
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         );
@@ -56,22 +76,32 @@ class _EmploiDuTempsScreenState extends State<EmploiDuTempsScreen> {
     pdf.addPage(
       pw.MultiPage(
         build: (context) => [
-          pw.Text('Emploi du Temps', style: pw.TextStyle(fontSize: 24)),
-          ...emploiDuTemps.entries.map((entry) => pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(entry.key, style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
-              ...entry.value.map((cours) => pw.Text(
-                '${cours['matière']} - ${cours['horaire']} - Classe: ${cours['classe']}',
-                style: pw.TextStyle(fontSize: 16),
+          pw.Text('Emploi du Temps',
+              style: pw.TextStyle(
+                fontSize: 24,
+                fontWeight: pw.FontWeight.bold,
               )),
-              pw.SizedBox(height: 10),
-            ],
-          )),
+          ...emploiDuTemps.entries.map(
+            (entry) => pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(entry.key,
+                    style: pw.TextStyle(
+                        fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                ...entry.value.map(
+                  (cours) => pw.Text(
+                    '${cours['matière']} - ${cours['horaire']} - Classe: ${cours['classe']}',
+                    style: pw.TextStyle(fontSize: 16),
+                  ),
+                ),
+                pw.SizedBox(height: 10),
+              ],
+            ),
+          ),
         ],
       ),
     );
-    await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdf.save());
+    // Note : tu peux ici sauvegarder ou partager le PDF
   }
 
   String getWeekLabel() {
@@ -93,81 +123,137 @@ class _EmploiDuTempsScreenState extends State<EmploiDuTempsScreen> {
     });
   }
 
+  final Gradient appBarGradient = const LinearGradient(
+    colors: [Color(0xFF8E9EFB), Color(0xFFB8C6DB)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Emploi du temps', style: TextStyle(fontSize: 20)),
-        backgroundColor: Colors.blue,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.picture_as_pdf),
-            onPressed: _exportToPDF,
-            tooltip: 'Exporter en PDF',
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(56),
+        child: AppBar(
+          flexibleSpace: Container(
+            decoration: BoxDecoration(gradient: appBarGradient),
           ),
-        ],
+          title: Text(
+            'Emploi du temps',
+            style: TextStyle(
+              fontSize: 20,
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.picture_as_pdf, color: Colors.white),
+              onPressed: _exportToPDF,
+              tooltip: 'Exporter en PDF',
+            ),
+          ],
+          elevation: 0,
+        ),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(onPressed: _previousWeek, icon: Icon(Icons.arrow_back)),
-                Text('Semaine: ${getWeekLabel()}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                IconButton(onPressed: _nextWeek, icon: Icon(Icons.arrow_forward)),
-              ],
+      body: Container(
+        color: Color(0xFFF0F3FF), // Fond très clair bleu-violet
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    onPressed: _previousWeek,
+                    icon: Icon(Icons.arrow_back, color: Color(0xFF345FB4)),
+                  ),
+                  Text(
+                    'Semaine: ${getWeekLabel()}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Poppins',
+                      color: Color(0xFF345FB4),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _nextWeek,
+                    icon: Icon(Icons.arrow_forward, color: Color(0xFF345FB4)),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: ListView(
-              children: emploiDuTemps.keys.map((jour) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        jour,
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                children: emploiDuTemps.keys.map((jour) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                        child: Text(
+                          jour,
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins',
+                            color: Color(0xFF5A6DB7),
+                          ),
+                        ),
                       ),
-                    ),
-                    Column(
-                      children: emploiDuTemps[jour]!.map((item) {
-                        return Card(
-                          margin: EdgeInsets.symmetric(vertical: 8),
-                          elevation: 5,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: ListTile(
-                            leading: Icon(Icons.schedule, color: Colors.indigo),
-                            title: Text(
-                              '${item['matière']}',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                      Column(
+                        children: emploiDuTemps[jour]!.map((item) {
+                          return Card(
+                            margin: EdgeInsets.symmetric(vertical: 8),
+                            elevation: 4,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15),
                             ),
-                            subtitle: Text(
-                              'Horaire: ${item['horaire']} - Classe: ${item['classe']}',
-                              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                            shadowColor: Color(0xFF8E9EFB).withOpacity(0.5),
+                            child: ListTile(
+                              leading: Icon(Icons.schedule, color: Color(0xFF6D7DE3)),
+                              title: Text(
+                                '${item['matière']}',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'Poppins',
+                                  color: Color(0xFF345FB4),
+                                ),
+                              ),
+                              subtitle: Text(
+                                'Horaire: ${item['horaire']} - Classe: ${item['classe']}',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.grey[700],
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              trailing: IconButton(
+                                icon: Icon(Icons.notifications,
+                                    size: 25, color: Color(0xFF8E9EFB)),
+                                onPressed: () {
+                                  _showNotification(
+                                      'Le cours de ${item['matière']} a été modifié.');
+                                },
+                              ),
                             ),
-                            trailing: IconButton(
-                              icon: Icon(Icons.notifications, size: 25, color: Colors.blue),
-                              onPressed: () {
-                                _showNotification('Le cours de ${item['matière']} a été modifié.');
-                              },
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    Divider(),
-                  ],
-                );
-              }).toList(),
+                          );
+                        }).toList(),
+                      ),
+                      Divider(color: Colors.blueGrey[200], thickness: 1.2),
+                    ],
+                  );
+                }).toList(),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

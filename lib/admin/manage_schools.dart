@@ -31,7 +31,8 @@ class _ManageSchoolsScreenState extends State<ManageSchoolsScreen> {
 
   void _searchSchools(String query) {
     final results = allSchools
-        .where((school) => school['name']!.toLowerCase().contains(query.toLowerCase()))
+        .where((school) =>
+            school['name']!.toLowerCase().contains(query.toLowerCase()))
         .toList();
     setState(() {
       filteredSchools = results;
@@ -43,56 +44,45 @@ class _ManageSchoolsScreenState extends State<ManageSchoolsScreen> {
     String directorName = '';
     String schoolAddress = '';
 
-    // Display form for adding a new school
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Add a school'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                onChanged: (value) {
-                  schoolName = value;
-                },
-                decoration: InputDecoration(labelText: 'Name of the school'),
-              ),
-              TextField(
-                onChanged: (value) {
-                  directorName = value;
-                },
-                decoration: InputDecoration(labelText: 'Director name'),
-              ),
-              TextField(
-                onChanged: (value) {
-                  schoolAddress = value;
-                },
-                decoration: InputDecoration(labelText: 'Adresse'),
-              ),
-            ],
+          backgroundColor: Colors.white,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+          title: Text('➕ Ajouter une école',
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildInputField('Nom de l\'école', Icons.school, (value) => schoolName = value),
+                _buildInputField('Nom du directeur', Icons.person, (value) => directorName = value),
+                _buildInputField('Adresse', Icons.location_on, (value) => schoolAddress = value),
+              ],
+            ),
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Cancel'),
+              child: Text('Annuler', style: TextStyle(color: Colors.grey)),
+              onPressed: () => Navigator.pop(context),
             ),
-            TextButton(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
               onPressed: () async {
-                if (schoolName.isNotEmpty && directorName.isNotEmpty && schoolAddress.isNotEmpty) {
-                  // Insert the new school into Supabase
+                if (schoolName.isNotEmpty &&
+                    directorName.isNotEmpty &&
+                    schoolAddress.isNotEmpty) {
                   await supabase.from('school').insert({
                     'name': schoolName,
                     'director': directorName,
                     'address': schoolAddress,
                   });
-                  fetchSchools(); // Refresh the list of schools
+                  fetchSchools();
                   Navigator.pop(context);
                 }
               },
-              child: Text('Add'),
+              child: Text('Ajouter'),
             ),
           ],
         );
@@ -100,63 +90,50 @@ class _ManageSchoolsScreenState extends State<ManageSchoolsScreen> {
     );
   }
 
-  Future<void> _editSchool(int id) async {
-    String schoolName = filteredSchools[id]['name']!;
-    String directorName = filteredSchools[id]['director']!;
-    String schoolAddress = filteredSchools[id]['address']!;
+  Future<void> _editSchool(int index) async {
+    String schoolName = filteredSchools[index]['name']!;
+    String directorName = filteredSchools[index]['director']!;
+    String schoolAddress = filteredSchools[index]['address']!;
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Edit a school'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: TextEditingController(text: schoolName),
-                onChanged: (value) {
-                  schoolName = value;
-                },
-                decoration: InputDecoration(labelText: 'Name of the school'),
-              ),
-              TextField(
-                controller: TextEditingController(text: directorName),
-                onChanged: (value) {
-                  directorName = value;
-                },
-                decoration: InputDecoration(labelText: 'Director name'),
-              ),
-              TextField(
-                controller: TextEditingController(text: schoolAddress),
-                onChanged: (value) {
-                  schoolAddress = value;
-                },
-                decoration: InputDecoration(labelText: 'Adresse'),
-              ),
-            ],
+          backgroundColor: Colors.white,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text('✏️ Modifier l\'école',
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo)),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildInputField('Nom de l\'école', Icons.school, (value) => schoolName = value, initialValue: schoolName),
+                _buildInputField('Nom du directeur', Icons.person, (value) => directorName = value, initialValue: directorName),
+                _buildInputField('Adresse', Icons.location_on, (value) => schoolAddress = value, initialValue: schoolAddress),
+              ],
+            ),
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Cancel'),
+              child: Text('Annuler', style: TextStyle(color: Colors.grey)),
+              onPressed: () => Navigator.pop(context),
             ),
-            TextButton(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
               onPressed: () async {
-                if (schoolName.isNotEmpty && directorName.isNotEmpty && schoolAddress.isNotEmpty) {
-                  // Update the school in Supabase
+                if (schoolName.isNotEmpty &&
+                    directorName.isNotEmpty &&
+                    schoolAddress.isNotEmpty) {
                   await supabase.from('school').update({
                     'name': schoolName,
                     'director': directorName,
                     'address': schoolAddress,
-                  }).eq('id', filteredSchools[id]['id']);
-                  fetchSchools(); // Refresh the list of schools
+                  }).eq('id', filteredSchools[index]['id']);
+                  fetchSchools();
                   Navigator.pop(context);
                 }
               },
-              child: Text('Edit'),
+              child: Text('Modifier'),
             ),
           ],
         );
@@ -164,106 +141,158 @@ class _ManageSchoolsScreenState extends State<ManageSchoolsScreen> {
     );
   }
 
-  Future<void> _deleteSchool(int id) async {
-    await supabase.from('school').delete().eq('id', id);
-    fetchSchools(); // Refresh the list of schools
+  Future<void> _deleteSchool(int index) async {
+    await supabase.from('school').delete().eq('id', filteredSchools[index]['id']);
+    fetchSchools();
   }
 
-  void _showDeleteConfirmation(int id) {
+  void _showDeleteConfirmation(int index) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Confirm deletion'),
-          content: Text('Are you sure you want to delete this school?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close the dialog
-              },
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                _deleteSchool(id); // Delete the school
-                Navigator.pop(context); // Close the dialog
-              },
-              child: Text('Delete'),
-            ),
-          ],
-        );
-      },
+      builder: (context) => AlertDialog(
+        title: Text('⚠️ Suppression'),
+        content: Text('Confirmer la suppression de cette école ?'),
+        actions: [
+          TextButton(
+            child: Text('Annuler'),
+            onPressed: () => Navigator.pop(context),
+          ),
+          TextButton(
+            child: Text('Supprimer', style: TextStyle(color: Colors.red)),
+            onPressed: () {
+              _deleteSchool(index);
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputField(String label, IconData icon, Function(String) onChanged,
+      {String? initialValue}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: TextFormField(
+        initialValue: initialValue,
+        onChanged: onChanged,
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon, color: Colors.grey),
+          labelText: label,
+          labelStyle: TextStyle(color: Colors.grey),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text("Managing schools"),
-        backgroundColor: Color(0xFF345FB4),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: _addSchool,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF8E9EFB), Color(0xFFB8C6DB)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Search bar
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                labelText: 'Search for a school',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onChanged: _searchSchools,
-            ),
-          ),
-          SizedBox(height: 20),
-
-          // List of schools
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: ListView.builder(
-                itemCount: filteredSchools.length,
-                itemBuilder: (context, index) {
-                  final school = filteredSchools[index];
-                  return Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: ListTile(
-                      title: Text(school['name'] ?? ''),
-                      subtitle: Text("Directeur: ${school['director']}"),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.edit),
-                            onPressed: () => _editSchool(index),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: () => _showDeleteConfirmation(index),
-                          ),
-                        ],
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    const Text(
+                      "🏫 Gestion des écoles",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontFamily: 'Poppins',
                       ),
                     ),
-                  );
-                },
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.add, color: Colors.white),
+                      onPressed: _addSchool,
+                    ),
+                  ],
+                ),
               ),
-            ),
+
+              // Search Bar
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: _searchSchools,
+                  decoration: InputDecoration(
+                    hintText: '🔍 Rechercher une école',
+                    filled: true,
+                    fillColor: Colors.white,
+                    prefixIcon: Icon(Icons.search, color: Colors.indigo),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // School List
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: filteredSchools.length,
+                  itemBuilder: (context, index) {
+                    final school = filteredSchools[index];
+                    return Card(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
+                      color: Colors.black,
+                      elevation: 4,
+                      margin: const EdgeInsets.only(bottom: 10),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.black,
+                          child: Icon(Icons.school, color: Colors.grey),
+                        ),
+                        title: Text(
+                          school['name'] ?? '',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 10),
+                        ),
+                        subtitle: Text(
+                            "🎓 Directeur: ${school['director'] ?? ''}\n📍 ${school['address'] ?? ''}"),
+                        isThreeLine: true,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.edit, color: Colors.orange),
+                              onPressed: () => _editSchool(index),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => _showDeleteConfirmation(index),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

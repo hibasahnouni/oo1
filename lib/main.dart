@@ -22,7 +22,7 @@ import 'package:oo/view/student/student_contact_screen.dart';
 import 'package:oo/view/student/student_details_screen.dart';
 import 'package:oo/view/student/student_home_screen.dart';
 import 'package:oo/view/student/student_profile_screen.dart';
-import 'package:oo/view/student/student_results_screen.dart';
+
 import 'package:oo/view/student/student_support_screen.dart';
 import 'package:sizer/sizer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -90,8 +90,6 @@ class MyApp extends StatelessWidget {
             'TechnicalSupportScreen':
                 (context) => const TechnicalSupportScreen(),
             StudentContactScreen.routeName: (context) => StudentContactScreen(),
-            StudentResultsScreen.routeName:
-                (context) => StudentResultsScreen(studentId: ''),
             EditStudentProfileScreen.routeName:
                 (context) =>
                     EditStudentProfileScreen(name: '', email: '', phone: ''),

@@ -154,7 +154,7 @@ class _ManageSyllabusScreenState extends State<ManageSyllabusScreen> {
       backgroundColor: const Color(0xFFEFF2FF),
       appBar: AppBar(
         title: const Text("📚 Gérer les cours"),
-        backgroundColor: const Color(0xFFB8C6DB),
+        backgroundColor: const Color(0xFF8E9EFB),
         centerTitle: true,
         foregroundColor: Colors.white,
         shape: const RoundedRectangleBorder(
