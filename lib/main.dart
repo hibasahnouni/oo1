@@ -6,6 +6,7 @@ import 'package:oo/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:oo/view/chat_view/chatscreen_list.dart';
 import 'package:oo/view/chat_view/list_user.dart';
+import 'package:oo/view/parent/attendance_screen.dart';
 
 import 'package:oo/view/parent/grades_screen.dart';
 import 'package:oo/view/parent/homework_screen.dart';
@@ -70,6 +71,7 @@ class MyApp extends StatelessWidget {
             ManageStudentsScreen.routeName: (context) => ManageStudentsScreen(),
             MyProfileScreen.routeName: (context) => MyProfileScreen(),
             MyProfileScreen.routeName: (context) => const MyProfileScreen(),
+            
             'StudentProfile': (context) => StudentProfileScreen(),
             'SignUpScreen': (_) => SignUpScreen(),
             'HomeworkScreen': (context) => const HomeworkScreen(),

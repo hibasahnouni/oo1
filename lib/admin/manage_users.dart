@@ -13,127 +13,293 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
   List<Map<String, dynamic>> users = [];
   bool isLoading = false;
 
-  final Gradient backgroundGradient = const LinearGradient(
-    colors: [Color(0xFF8E9EFB), Color(0xFFB8C6DB)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
+  String selectedRole = 'Parents';
+  final List<String> roles = ['Parents', 'Students', 'Teachers'];
 
   @override
   void initState() {
     super.initState();
-    fetchUsers();
+    fetchUsersByRole(selectedRole);
   }
 
-  Future<void> fetchUsers() async {
-    setState(() => isLoading = true);
-    final response = await supabase.from('users').select();
+  Future<void> fetchUsersByRole(String role) async {
+    setState(() {
+      isLoading = true;
+      users = [];
+    });
+
+    final table = role.toLowerCase();
+    final response = await supabase.from(table).select();
     setState(() {
       users = List<Map<String, dynamic>>.from(response);
       isLoading = false;
     });
   }
 
-  Future<void> deleteUser(String id) async {
-    await supabase.from('users').delete().eq('id', id);
-    fetchUsers();
+  Future<void> deleteUser(String table, String id) async {
+    await supabase.from(table).delete().eq('id', id);
+    fetchUsersByRole(selectedRole);
+  }
+
+  Future<String?> fetchParentName(String parentId) async {
+    final response = await supabase
+        .from('parents')
+        .select('full_name')
+        .eq('id', parentId)
+        .maybeSingle();
+    return response?['full_name'];
+  }
+
+  Future<String?> fetchChildName(String childId) async {
+    final response = await supabase
+        .from('students')
+        .select('full_name')
+        .eq('id', childId)
+        .maybeSingle();
+    return response?['full_name'];
+  }
+
+  void showEditDialog(Map<String, dynamic> user) {
+    String fullName = user['full_name'] ?? '';
+    String email = user['email'] ?? '';
+    String phone = user['phone'] ?? '';
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Wrap(
+            children: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "Modifier l'utilisateur",
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    initialValue: fullName,
+                    style: const TextStyle(color: Color.fromARGB(255, 62, 61, 61)),
+                    decoration: const InputDecoration(
+                      labelText: 'Nom complet',
+                      labelStyle: TextStyle(color: Colors.grey),
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.person, color: Colors.grey),
+                    ),
+                    onChanged: (value) => fullName = value,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    initialValue: email,
+                    style: const TextStyle(color: Color.fromARGB(255, 62, 61, 61)),
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      labelStyle: TextStyle(color: Colors.grey),
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.email, color: Colors.grey),
+                    ),
+                    onChanged: (value) => email = value,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    initialValue: phone,
+                    style: const TextStyle(color: Color.fromARGB(255, 62, 61, 61)),
+                    decoration: const InputDecoration(
+                      labelText: 'Téléphone',
+                      labelStyle: TextStyle(color: Colors.grey),
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.phone, color: Colors.grey),
+                    ),
+                    onChanged: (value) => phone = value,
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton.icon(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.cancel, color: Colors.grey),
+                        label: const Text("Annuler", style: TextStyle(color: Colors.grey)),
+                      ),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF8E9EFB),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: () async {
+                          final table = selectedRole.toLowerCase();
+                          await supabase.from(table).update({
+                            'full_name': fullName,
+                            'email': email,
+                            'phone': phone,
+                          }).eq('id', user['id']);
+                          Navigator.pop(context);
+                          fetchUsersByRole(selectedRole);
+                        },
+                        icon: const Icon(Icons.save),
+                        label: const Text("Enregistrer"),
+                      ),
+                    ],
+                  )
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final gradient = const LinearGradient(
+      colors: [Color(0xFF8E9EFB), Color(0xFF8E9EFB)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        title: const Text("Gérer les utilisateurs", style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
-          'Manage Users',
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-            color: Colors.white,
-          ),
-        ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      extendBodyBehindAppBar: true,
       body: Container(
-        decoration: BoxDecoration(gradient: backgroundGradient),
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator(color: Colors.white))
-            : users.isEmpty
-                ? const Center(
-                    child: Text(
-                      "No users found.",
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(vertical: 100, horizontal: 16),
-                    itemCount: users.length,
-                    itemBuilder: (context, index) {
-                      final user = users[index];
-                      return Card(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                        elevation: 5,
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.all(8),
-                            leading: const Icon(Icons.person, color: Color(0xFF345FB4), size: 30),
-                            title: Row(
-                              children: [
-                                const Icon(Icons.email, color: Colors.grey, size: 18),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    user['email'] ?? 'No email',
-                                    style: const TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                      color: Color(0xFF345FB4),
+        decoration: BoxDecoration(gradient: gradient),
+        child: Column(
+          children: [
+            const SizedBox(height: 100),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Theme(
+                data: Theme.of(context).copyWith(
+                  canvasColor: const Color(0xFF8E9EFB),
+                ),
+                child: DropdownButtonFormField<String>(
+                  value: selectedRole,
+                  dropdownColor: const Color(0xFF8E9EFB),
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFF8E9EFB),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => selectedRole = value);
+                      fetchUsersByRole(value);
+                    }
+                  },
+                  items: roles.map((role) {
+                    return DropdownMenuItem(
+                      value: role,
+                      child: Text(role, style: const TextStyle(color: Colors.white)),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                  : users.isEmpty
+                      ? const Center(
+                          child: Text(
+                            "Aucun utilisateur trouvé.",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: users.length,
+                          itemBuilder: (context, index) {
+                            final user = users[index];
+                            return FutureBuilder<String?>(
+                              future: selectedRole == 'Students' && user['parent_id'] != null
+                                  ? fetchParentName(user['parent_id'])
+                                  : selectedRole == 'Parents' && user['child_id'] != null
+                                      ? fetchChildName(user['child_id'])
+                                      : Future.value(null),
+                              builder: (context, snapshot) {
+                                final relation = snapshot.data;
+                                return Card(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  elevation: 5,
+                                  margin: const EdgeInsets.symmetric(vertical: 8),
+                                  child: ListTile(
+                                    leading: const Icon(Icons.person, color: Color(0xFF345FB4), size: 30),
+                                    title: Text(
+                                      user['full_name'] ?? 'Nom inconnu',
+                                      style: const TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: Color(0xFF345FB4),
+                                      ),
+                                    ),
+                                    subtitle: relation != null
+                                        ? Text(
+                                            selectedRole == 'Students'
+                                                ? "Parent : $relation"
+                                                : "Enfant : $relation",
+                                          )
+                                        : null,
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.edit, color: Colors.orange),
+                                          onPressed: () => showEditDialog(user),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete, color: Colors.red),
+                                          onPressed: () => deleteUser(selectedRole.toLowerCase(), user['id']),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            subtitle: Row(
-                              children: [
-                                const Icon(Icons.verified_user, color: Colors.grey, size: 16),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Role: ${user['role'] ?? 'Unknown'}',
-                                  style: const TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 13,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.redAccent),
-                              onPressed: () => deleteUser(user['id']),
-                            ),
-                          ),
+                                );
+                              },
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Ajouter un utilisateur (à personnaliser selon ton app)
+          switch (selectedRole) {
+            case 'Parents':
+              Navigator.pushNamed(context, '/addParent');
+              break;
+            case 'Students':
+              Navigator.pushNamed(context, '/addStudent');
+              break;
+            case 'Teachers':
+              Navigator.pushNamed(context, '/addTeacher');
+              break;
+          }
         },
-        backgroundColor: const Color(0xFF345FB4),
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: const Color(0xFF8E9EFB),
+        child: const Icon(Icons.add),
+        tooltip: "Ajouter un $selectedRole",
       ),
     );
   }

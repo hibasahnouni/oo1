@@ -122,9 +122,11 @@ class TeacherHomeScreen extends StatelessWidget {
                   TeacherCard(icon: Icons.schedule, title: "Emploi du temps", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EmploiDuTempsScreen()))),
                   TeacherCard(icon: Icons.notifications, title: "Notifications", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => NotificationsScreen()))),
                   TeacherCard(icon: Icons.lock, title: "Mot de passe", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ChangePasswordScreen()))),
+                  
                   TeacherCard(icon: Icons.picture_as_pdf, title: "List of student", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => StudentListPage()))),
                   TeacherCard(icon: Icons.assignment_turned_in, title: "Résultats examens", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AddStudentGradeScreen()))),
                   TeacherCard(icon: Icons.picture_as_pdf, title: "Syllabus", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SyllabusScreen()))),
+                  
                 ],
               ),
             ),

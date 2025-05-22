@@ -13,6 +13,7 @@ class ManagePaymentsScreen extends StatefulWidget {
 class _ManagePaymentsScreenState extends State<ManagePaymentsScreen> {
   final SupabaseClient supabase = Supabase.instance.client;
   List<Map<String, dynamic>> payments = [];
+  List<Map<String, dynamic>> students = [];
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
 
@@ -20,6 +21,7 @@ class _ManagePaymentsScreenState extends State<ManagePaymentsScreen> {
   void initState() {
     super.initState();
     _fetchPayments();
+    _fetchStudents();
   }
 
   Future<void> _fetchPayments() async {
@@ -27,9 +29,15 @@ class _ManagePaymentsScreenState extends State<ManagePaymentsScreen> {
         .from('pyment')
         .select('id, amount, status, pyment_date, students(full_name)')
         .order('pyment_date', ascending: false);
-
     setState(() {
       payments = List<Map<String, dynamic>>.from(response);
+    });
+  }
+
+  Future<void> _fetchStudents() async {
+    final response = await supabase.from('students').select('id, full_name');
+    setState(() {
+      students = List<Map<String, dynamic>>.from(response);
     });
   }
 
@@ -39,13 +47,8 @@ class _ManagePaymentsScreenState extends State<ManagePaymentsScreen> {
       return date != null &&
           date.year == day.year &&
           date.month == day.month &&
-          date.day == day.day;
+          date.day == day.day ;
     }).toList();
-  }
-
-  Future<void> _updatePayment(String id, String status) async {
-    await supabase.from('pyment').update({'status': status}).eq('id', id);
-    _fetchPayments();
   }
 
   Future<void> _deletePayment(String id) async {
@@ -54,7 +57,7 @@ class _ManagePaymentsScreenState extends State<ManagePaymentsScreen> {
   }
 
   void _showAddPaymentDialog() {
-    final studentController = TextEditingController();
+    String? selectedStudentId;
     final amountController = TextEditingController();
     String status = 'No Paid';
 
@@ -62,23 +65,35 @@ class _ManagePaymentsScreenState extends State<ManagePaymentsScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("➕ Ajouter un paiement"),
+          backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+          title: const Text("➕ Ajouter un paiement",
+              style: TextStyle(fontFamily: 'Poppins',color: Color.fromARGB(255, 146, 142, 142), fontSize: 18)),
           content: SingleChildScrollView(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(
-                  controller: studentController,
+                
+                DropdownButtonFormField<String>(
                   decoration: const InputDecoration(
-                    labelText: "Nom de l'élève",
+                    labelText: "Élève",
+                    
                     border: OutlineInputBorder(),
                   ),
+                  items: students.map((student) {
+                    return DropdownMenuItem(
+                      value: student['id'].toString(),
+                      child: Text(student['full_name'],
+                          style: const TextStyle(color: Color.fromARGB(255, 106, 103, 103),fontFamily: 'Poppins')),
+                    );
+                  }).toList(),
+                  onChanged: (val) => selectedStudentId = val,
                 ),
                 const SizedBox(height: 10),
                 TextField(
                   controller: amountController,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(
-                    labelText: "Montant",
+                    labelText: "Montant (DA)",
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -90,44 +105,45 @@ class _ManagePaymentsScreenState extends State<ManagePaymentsScreen> {
                     border: OutlineInputBorder(),
                   ),
                   items: ['Paid', 'No Paid'].map((value) {
-                    return DropdownMenuItem(value: value, child: Text(value));
+                    return DropdownMenuItem(
+                      value: value,
+                      child: Text(value,
+                          style: const TextStyle(color: Color.fromARGB(255, 106, 103, 103),fontFamily: 'Poppins')),
+                    );
                   }).toList(),
-                  onChanged: (val) => setState(() => status = val ?? 'No Paid'),
+                  onChanged: (val) => status = val ?? 'No Paid',
                 ),
               ],
             ),
           ),
           actions: [
             TextButton(
-              child: const Text("Annuler"),
+              child: const Text("Annuler",
+                  style: TextStyle(fontFamily: 'Poppins')),
               onPressed: () => Navigator.of(context).pop(),
             ),
-            TextButton(
-              child: const Text("Ajouter"),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 228, 236, 243)),
+              child: const Text("Ajouter",
+                  style: TextStyle(fontFamily: 'Poppins')),
               onPressed: () async {
-                if (studentController.text.isNotEmpty && amountController.text.isNotEmpty) {
-                  try {
-                    final response = await supabase
-                        .from('students')
-                        .select('id')
-                        .eq('full_name', studentController.text)
-                        .single();
-
-                    if (response != null) {
-                      await supabase.from('pyment').insert({
-                        'student_id': response['id'],
-                        'amount': double.parse(amountController.text),
-                        'status': status,
-                        'pyment_date': DateTime.now().toIso8601String(),
-                      });
-                      Navigator.of(context).pop();
-                      _fetchPayments();
-                    }
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("❌ Élève introuvable.")),
-                    );
-                  }
+                if (selectedStudentId != null &&
+                    amountController.text.isNotEmpty) {
+                  await supabase.from('pyment').insert({
+                    'student_id': selectedStudentId,
+                    'amount': double.parse(amountController.text),
+                    'status': status,
+                    'pyment_date': DateTime.now().toIso8601String(),
+                  });
+                  Navigator.of(context).pop();
+                  _fetchPayments();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text("❌ Remplissez tous les champs.",
+                            style: TextStyle(fontFamily: 'Poppins'))),
+                  );
                 }
               },
             ),
@@ -137,7 +153,6 @@ class _ManagePaymentsScreenState extends State<ManagePaymentsScreen> {
     );
   }
 
-  // Marquage des jours avec des paiements (vert = payé, rouge = non payé)
   Map<DateTime, List<Map<String, dynamic>>> _groupPaymentsByDay() {
     final Map<DateTime, List<Map<String, dynamic>>> data = {};
     for (var payment in payments) {
@@ -156,18 +171,19 @@ class _ManagePaymentsScreenState extends State<ManagePaymentsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("💳 Gestion des paiements"),
-        backgroundColor: const Color(0xFFF5F7FA),
+        title: const Text("💳 Paiements",
+            style: TextStyle(fontFamily: 'Poppins', color: Colors.white)),
+        backgroundColor: const Color(0xFF8E9EFB),
         actions: [
           IconButton(
-            icon:  Icon(Icons.add,color: Colors.black,),
+            icon: const Icon(Icons.add, color: Colors.white),
+            tooltip: "Ajouter un paiement",
             onPressed: _showAddPaymentDialog,
-          ),
+          )
         ],
       ),
-      backgroundColor: Color(0xFF8E9EFB), 
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFF8E9EFB), Color(0xFFB8C6DB)],
             begin: Alignment.topLeft,
@@ -178,74 +194,112 @@ class _ManagePaymentsScreenState extends State<ManagePaymentsScreen> {
           children: [
             TableCalendar(
               focusedDay: _focusedDay,
-              firstDay: DateTime.utc(2023, 1, 1),
-              lastDay: DateTime.utc(2030, 12, 31),
-              selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
+              firstDay: DateTime(2023, 1, 1),
+              lastDay: DateTime(2030, 12, 31),
+              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
               onDaySelected: (selectedDay, focusedDay) {
                 setState(() {
                   _selectedDay = selectedDay;
                   _focusedDay = focusedDay;
                 });
               },
-              eventLoader: (day) => events[DateTime(day.year, day.month, day.day)] ?? [],
-              calendarStyle: CalendarStyle(
-                markerDecoration: BoxDecoration(
-                  color: Colors.blueAccent,
-                  shape: BoxShape.circle,
-                ),
-                todayDecoration: BoxDecoration(
-                  color: Colors.amber,
-                  shape: BoxShape.circle,
-                ),
-                selectedDecoration: BoxDecoration(
-                  color: Colors.green,
-                  shape: BoxShape.circle,
-                ),
-              ),
+              eventLoader: (day) =>
+                  events[DateTime(day.year, day.month, day.day)] ?? [],
               calendarBuilders: CalendarBuilders(
-                markerBuilder: (context, day, events) {
-                  if (events.isEmpty) return null;
-                  final isPaid = events.any((e) => ['status'] == 'Paid');
+                markerBuilder: (context, date, eventsList) {
+                  if (eventsList.isEmpty) return null;
+                  final hasPaid = eventsList.any((e) => ['status'] == 'Paid');
                   return Positioned(
                     bottom: 1,
                     child: Container(
                       width: 6,
                       height: 6,
                       decoration: BoxDecoration(
-                        color: isPaid ? Colors.green : Colors.red,
+                        color: hasPaid ? Colors.green : Colors.red,
                         shape: BoxShape.circle,
                       ),
                     ),
                   );
                 },
               ),
+              headerStyle: const HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: true,
+                titleTextStyle:
+                    TextStyle(fontFamily: 'Poppins', color: Colors.white),
+                leftChevronIcon:
+                    Icon(Icons.chevron_left, color: Colors.white),
+                rightChevronIcon:
+                    Icon(Icons.chevron_right, color: Colors.white),
+              ),
+              daysOfWeekStyle: const DaysOfWeekStyle(
+                weekdayStyle:
+                    TextStyle(color: Colors.white, fontSize: 14,fontFamily: 'Poppins'),
+                weekendStyle:
+                    TextStyle(color: Colors.white, fontSize: 14,fontFamily: 'Poppins'),
+              ),
+              calendarStyle: const CalendarStyle(
+                todayDecoration: BoxDecoration(
+                    color: Colors.orange, shape: BoxShape.circle),
+                selectedDecoration: BoxDecoration(
+                    color: Colors.green, shape: BoxShape.circle),
+                defaultTextStyle:
+                    TextStyle(color: Colors.white, fontFamily: 'Poppins'),
+                weekendTextStyle:
+                    TextStyle(color: Colors.white, fontFamily: 'Poppins'),
+                outsideTextStyle:
+                    TextStyle(color: Colors.white60, fontFamily: 'Poppins'),
+              ),
             ),
             const SizedBox(height: 10),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: _getPaymentsForDay(_selectedDay).map((payment) {
-                  final studentName = payment['students']['full_name'] ?? 'Inconnu';
-                  return Card(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 2,
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    child: ListTile(
-                      title: Text("👤 Élève : $studentName"),
-                      subtitle: Text("💰 Montant : ${payment['amount']} DA\n📌 Statut : ${payment['status']}"),
-                      trailing: Icon(
-                        payment['status'] == 'Paid' ? Icons.check_circle : Icons.cancel,
-                        color: payment['status'] == 'Paid' ? Colors.green : Colors.red,
-                      ),
-                      onTap: () {
-                        final newStatus = payment['status'] == 'Paid' ? 'No Paid' : 'Paid';
-                        _updatePayment(payment['id'], newStatus);
+              child: _getPaymentsForDay(_selectedDay).isEmpty
+                  ? const Center(
+                      child: Text("Aucun paiement trouvé.",
+                          style: TextStyle(
+                              fontFamily: 'Poppins', color: Colors.white)))
+                  : ListView.builder(
+                      itemCount: _getPaymentsForDay(_selectedDay).length,
+                      itemBuilder: (context, index) {
+                        final payment =
+                            _getPaymentsForDay(_selectedDay)[index];
+                        final studentName =
+                            payment['students']?['full_name'] ?? "Inconnu";
+                        final statusColor = payment['status'] == 'Paid'
+                            ? Colors.green
+                            : Colors.red;
+                        return Card(
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 5),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15)),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: statusColor,
+                              child: Icon(
+                                  payment['status'] == 'Paid'
+                                      ? Icons.check
+                                      : Icons.close,
+                                  color: Colors.white),
+                            ),
+                            title: Text(studentName,
+                                style: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    color: Colors.black)),
+                            subtitle: Text("💰 ${payment['amount']} DA",
+                                style: const TextStyle(
+                                    fontFamily: 'Poppins',
+                                    color: Colors.black87)),
+                            trailing: IconButton(
+                              icon:
+                                  const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () =>
+                                  _deletePayment(payment['id'].toString()),
+                            ),
+                          ),
+                        );
                       },
-                      onLongPress: () => _deletePayment(payment['id']),
                     ),
-                  );
-                }).toList(),
-              ),
             ),
           ],
         ),

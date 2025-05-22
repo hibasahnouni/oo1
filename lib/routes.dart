@@ -2,6 +2,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:oo/admin/ManageStudentsScreen.dart';
 import 'package:oo/my_profile_screen.dart';
+import 'package:oo/view/parent/attendance_screen.dart';
 import 'package:oo/view/parent/parent_home_screen.dart';
 import 'package:oo/view/parent/parent_profile_screen.dart';
 import 'package:oo/view/screens/assignment_screen/assignment_screen.dart';
@@ -64,6 +65,7 @@ Map<String, WidgetBuilder> routes = {
   'StudentProfileScreen': (context) => const StudentProfileScreen(),
   StudentProfileScreen.routeName: (context) => const StudentProfileScreen(),
   StudentHomeScreen.routeName: (context) => const StudentHomeScreen(),
+'/manageusers': (context) => ManageUsersScreen(),
 
 
   '/student-home': (context) => StudentHomeScreen(),
@@ -77,4 +79,9 @@ Map<String, WidgetBuilder> routes = {
   StudentProfileScreen.routeName: (context) => const StudentProfileScreen(),
   StudentHomeScreen.routeName: (context) => const StudentHomeScreen(),
   StudentProfileScreen.routeName: (context) => const StudentProfileScreen(),
+  
 };
+
+
+
+

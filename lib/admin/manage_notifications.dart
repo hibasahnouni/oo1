@@ -80,18 +80,26 @@ class _ManageNotificationsScreenState extends State<ManageNotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color(0xFF8E9EFB),
+        title: Text("Manage Notifications"),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, '/adminDashboard');
+            // ou Navigator.pop(context); si tu veux juste revenir à l'écran précédent
+          },
+        ),
+      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-
             colors: [
-              Color(0xFF8E9EFB), // Bleu clair
+              Color(0xFF8E9EFB),
               Color(0xFFB8C6DB),
-           // Bleu un peu plus foncé
             ],
-
           ),
         ),
         child: SafeArea(
@@ -101,28 +109,17 @@ class _ManageNotificationsScreenState extends State<ManageNotificationsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Manage Notifications",
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white.withOpacity(0.95),
-                    ),
-                  ),
                   SizedBox(height: 8),
                   Text(
                     "Send notifications to users",
                     style: TextStyle(fontSize: 16, color: Colors.white70),
                   ),
-
-
                   SizedBox(height: 30),
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.85), // au lieu de 0.9
+                      color: Colors.white.withOpacity(0.85),
                       borderRadius: BorderRadius.circular(15),
                     ),
-
                     padding: EdgeInsets.all(7),
                     child: Column(
                       children: [
@@ -173,7 +170,6 @@ class _ManageNotificationsScreenState extends State<ManageNotificationsScreen> {
                           style: TextStyle(color: Colors.black),
                         ),
                         SizedBox(height: 25),
-
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
@@ -188,13 +184,13 @@ class _ManageNotificationsScreenState extends State<ManageNotificationsScreen> {
                             child: _isSending
                                 ? CircularProgressIndicator(color: Colors.white)
                                 : Text(
-                              "Send Notification",
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                                    "Send Notification",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                           ),
                         ),
                       ],
