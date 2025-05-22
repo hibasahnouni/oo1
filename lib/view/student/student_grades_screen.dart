@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class StudentGradesScreen extends StatefulWidget {
-  static const String routeName = 'StudentGradesScreen';
+  static const String routeName = '/studentGrades';
   const StudentGradesScreen({Key? key}) : super(key: key);
 
   @override
@@ -35,153 +35,150 @@ class _StudentGradesScreenState extends State<StudentGradesScreen> {
         return Icons.calculate;
       case 'physique':
         return Icons.science;
-      case 'informatique':
-        return Icons.computer;
       case 'français':
-        return Icons.menu_book;
-      case 'histoire':
-        return Icons.account_balance;
-      case 'anglais':
         return Icons.language;
+      case 'histoire':
+        return Icons.book;
       default:
         return Icons.school;
     }
   }
 
+  final Gradient backgroundGradient = const LinearGradient(
+    colors: [Color(0xFF8E9EFB), Color(0xFFB8C6DB)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF8E9EFB), Color(0xFFB8C6DB)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: Text(
-                  "Mes Notes",
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+        decoration: BoxDecoration(gradient: backgroundGradient),
+        child: Column(
+          children: [
+            // AppBar custom avec flèche retour
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 20),
+              child: Row(
+                children: [
+                  // 🔙 Icône de retour
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white, size: 26),
+                    onPressed: () {
+                      Navigator.pop(context); 
+                      // Ou pour aller à une page spécifique :
+                      // Navigator.pushReplacementNamed(context, '/studentHome');
+                    },
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Mes Notes',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const Spacer(),
+                  const Icon(Icons.school, color: Colors.white, size: 26),
+                ],
               ),
-              Expanded(
-                child: FutureBuilder<List<dynamic>>(
-                  future: fetchGrades(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      );
-                    }
+            ),
 
-                    if (snapshot.hasError) {
-                      return Center(
-                        child: Text(
-                          "Erreur : ${snapshot.error}",
-                          style: const TextStyle(
-                            fontFamily: 'Poppins',
-                            color: Colors.white,
-                          ),
+            // Body
+            Expanded(
+              child: FutureBuilder<List<dynamic>>(
+                future: fetchGrades(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator(color: Colors.white));
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        'Erreur : ${snapshot.error.toString()}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'Poppins',
                         ),
-                      );
-                    }
-
-                    final grades = snapshot.data;
-
-                    if (grades == null || grades.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          "Aucune note disponible.",
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
+                      ),
+                    );
+                  } else if (snapshot.hasData && snapshot.data!.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'Aucune note disponible.',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'Poppins',
+                          fontSize: 16,
                         ),
-                      );
-                    }
-
-                    return GridView.builder(
+                      ),
+                    );
+                  } else {
+                    final grades = snapshot.data!;
+                    return ListView.builder(
                       padding: const EdgeInsets.all(12),
                       itemCount: grades.length,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 0.9, // Plus petit = cartes plus compactes
-                      ),
                       itemBuilder: (context, index) {
                         final grade = grades[index];
-                        final subject = grade['subject'] ?? 'Inconnu';
-                        final score = grade['grade']?.toString() ?? '--';
-                        final date = grade['date']?.toString().split('T').first ?? '';
-
                         return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 8),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.95),
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.08),
-                                blurRadius: 6,
-                                offset: const Offset(0, 3),
+                                blurRadius: 10,
+                                spreadRadius: 1,
+                                offset: const Offset(0, 4),
                               ),
                             ],
                           ),
-                          padding: const EdgeInsets.all(10),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(getSubjectIcon(subject), size: 34, color: Color(0xFF345FB4)),
-                              const SizedBox(height: 8),
-                              Text(
-                                subject,
-                                style: const TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF345FB4),
-                                ),
-                                textAlign: TextAlign.center,
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            leading: Icon(
+                              getSubjectIcon(grade['subject']),
+                              color: const Color(0xFF345FB4),
+                              size: 30,
+                            ),
+                            title: Text(
+                              grade['subject'],
+                              style: const TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF345FB4),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Note : $score',
-                                style: const TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 13,
-                                  color: Colors.black87,
-                                ),
+                            ),
+                            subtitle: Text(
+                              '${grade['evaluation']} - ${grade['date'].toString().split("T").first}',
+                              style: const TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 14,
+                                color: Colors.black87,
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Date : $date',
-                                style: const TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 11,
-                                  color: Colors.grey,
-                                ),
+                            ),
+                            trailing: Text(
+                              grade['grade'].toString(),
+                              style: const TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
                               ),
-                            ],
+                            ),
                           ),
                         );
                       },
                     );
-                  },
-                ),
+                  }
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -1,24 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class StudentSupportScreen extends StatelessWidget {
+class StudentSupportScreen extends StatefulWidget {
   static const String routeName = 'StudentSupportScreen';
 
+  @override
+  State<StudentSupportScreen> createState() => _StudentSupportScreenState();
+}
+
+class _StudentSupportScreenState extends State<StudentSupportScreen> {
   final Gradient backgroundGradient = const LinearGradient(
     colors: [Color(0xFF8E9EFB), Color(0xFFB8C6DB)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
+  final TextEditingController _messageController = TextEditingController();
+
+  void _sendEmail(String message) async {
+    final Uri emailLaunchUri = Uri(
+      scheme: 'mailto',
+      path: 'support@example.com',  // <-- Remplace par l'email support réel
+      queryParameters: {
+        'subject': 'Support technique - Problème utilisateur',
+        'body': message,
+      },
+    );
+
+    if (await canLaunchUrl(emailLaunchUri)) {
+      await launchUrl(emailLaunchUri);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Impossible d'ouvrir l'application mail.")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Fond dégradé sur tout l'écran
       body: Container(
         decoration: BoxDecoration(gradient: backgroundGradient),
         child: SafeArea(
           child: Column(
             children: [
-              // HEADER (AppBar custom)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -44,7 +69,6 @@ class StudentSupportScreen extends StatelessWidget {
 
               const SizedBox(height: 15),
 
-              // Texte d'instruction
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: const Align(
@@ -63,7 +87,6 @@ class StudentSupportScreen extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // Zone de texte sur fond semi-transparent clair
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Container(
@@ -80,6 +103,7 @@ class StudentSupportScreen extends StatelessWidget {
                     ],
                   ),
                   child: TextField(
+                    controller: _messageController,
                     maxLines: 6,
                     decoration: const InputDecoration(
                       hintText: "Votre message...",
@@ -98,10 +122,20 @@ class StudentSupportScreen extends StatelessWidget {
 
               const SizedBox(height: 30),
 
-              // Bouton Envoyer
               Center(
                 child: ElevatedButton(
                   onPressed: () {
+                    final message = _messageController.text.trim();
+                    if (message.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Veuillez écrire un message."),
+                          backgroundColor: Colors.redAccent,
+                        ),
+                      );
+                      return;
+                    }
+                    _sendEmail(message);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text(
@@ -111,6 +145,7 @@ class StudentSupportScreen extends StatelessWidget {
                         backgroundColor: Color(0xFF345FB4),
                       ),
                     );
+                    _messageController.clear();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF345FB4),

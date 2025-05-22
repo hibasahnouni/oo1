@@ -25,12 +25,19 @@ class StudentHomeworkScreen extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-              // HEADER
+              // HEADER avec flèche retour
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
                 child: Row(
-                  children: const [
-                    Text(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () {
+                        Navigator.pop(context); // Retour à la page précédente
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
                       'Devoirs de l’élève',
                       style: TextStyle(
                         fontFamily: 'Poppins',
@@ -39,7 +46,7 @@ class StudentHomeworkScreen extends StatelessWidget {
                         color: Colors.white,
                       ),
                     ),
-                    Spacer(),
+                    const Spacer(),
                   ],
                 ),
               ),

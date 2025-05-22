@@ -112,6 +112,13 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 child: Row(
                   children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/student-home');
+                      },
+                    ),
+                    const SizedBox(width: 8),
                     const Text(
                       'Profil Élève',
                       style: TextStyle(
